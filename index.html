@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Waktumu - Anti Manipulasi Data</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .pulse-ring {
+            box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4);
+            animation: pulse-animation 2s infinite;
+        }
+        @keyframes pulse-animation {
+            0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(99, 102, 241, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between">
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- APP WRAPPER -->
+    <div id="app" class="w-full min-h-screen flex flex-col">
+
+        <!-- ================= PAGE 1: LOGIN ================= -->
+        <div id="login-page" class="flex-1 flex items-center justify-center p-4 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900">
+            <div class="bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl p-6 sm:p-8 w-full max-w-md border border-white/20">
+                <div class="text-center mb-8">
+                    <div class="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 text-white shadow-lg shadow-indigo-500/30">
+                        <i class="fa-solid fa-user-shield text-3xl"></i>
+                    </div>
+                    <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight">Manage Waktumu</h1>
+                    <p class="text-indigo-600 text-xs font-bold tracking-widest uppercase mt-1">Sistem Anti-Manipulasi Data</p>
+                    <p class="text-slate-500 text-xs mt-2">Login untuk mencatat waktu perkuliahan secara otomatis dan akurat.</p>
+                </div>
+
+                <form id="login-form" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1.5">Username</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+                                <i class="fa-solid fa-user text-sm"></i>
+                            </span>
+                            <input type="text" id="login-username" required placeholder="Masukkan username" 
+                                class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1.5">Password</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+                                <i class="fa-solid fa-lock text-sm"></i>
+                            </span>
+                            <input type="password" id="login-password" required placeholder="Masukkan password" 
+                                class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
+                        </div>
+                    </div>
+
+                    <button type="submit" 
+                        class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl shadow-lg shadow-indigo-500/30 transition duration-200 flex items-center justify-center gap-2 text-sm">
+                        <span>Masuk ke Dashboard</span>
+                        <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </button>
+                </form>
+
+                <div class="mt-6 p-3 bg-slate-100 rounded-2xl text-xs text-slate-500 text-center border border-slate-200/60">
+                    <p class="font-semibold text-slate-700 mb-1"><i class="fa-solid fa-key text-indigo-500 mr-1"></i> Akun Akses Pribadi:</p>
+                    <p>Username: <span class="font-mono font-bold text-slate-800 bg-white px-1.5 py-0.5 rounded border">admin</span> | Password: <span class="font-mono font-bold text-slate-800 bg-white px-1.5 py-0.5 rounded border">admin123</span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= PAGE 2: DASHBOARD ================= -->
+        <div id="dashboard-page" class="hidden flex-1 flex flex-col bg-slate-100">
+            <!-- Header Navbar -->
+            <header class="bg-indigo-950 text-white sticky top-0 z-30 shadow-lg border-b border-indigo-900">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-inner">
+                            <i class="fa-solid fa-clock text-lg"></i>
+                        </div>
+                        <div>
+                            <h1 class="font-bold text-base sm:text-lg leading-tight flex items-center gap-2">
+                                Manage Waktumu
+                                <span class="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full font-medium hidden sm:inline-flex items-center gap-1">
+                                    <i class="fa-solid fa-lock text-[9px]"></i> Anti-Manipulasi Active
+                                </span>
+                            </h1>
+                            <p class="text-xs text-indigo-300">Atasi Keterlambatanku</p>
+                        </div>
+                    </div>
+
+                    <!-- Jam Digital Realtime Navbar -->
+                    <div class="flex items-center gap-4">
+                        <div class="hidden md:flex flex-col items-end border-r border-indigo-800 pr-4">
+                            <div id="live-time-navbar" class="font-mono text-base font-bold text-emerald-400 tracking-wider">00:00:00 WIB</div>
+                            <div id="live-date-navbar" class="text-[11px] text-slate-300">Senin, 1 Jan 2026</div>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <span id="user-display" class="hidden lg:inline-block text-xs bg-indigo-900/80 text-indigo-200 px-3 py-1.5 rounded-xl border border-indigo-800">
+                                <i class="fa-solid fa-circle-user text-indigo-400 mr-1.5"></i> <strong id="username-badge" class="text-white">admin</strong>
+                            </span>
+                            <button id="logout-btn" title="Keluar"
+                                class="px-3 py-1.5 bg-rose-600/90 hover:bg-rose-600 text-white text-xs font-semibold rounded-xl transition flex items-center gap-1.5 shadow">
+                                <i class="fa-solid fa-right-from-bracket"></i>
+                                <span class="hidden sm:inline">Keluar</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Content Container -->
+            <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-1 space-y-6">
+
+                <!-- Realtime Banner & Target Setter -->
+                <div class="bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 text-white p-5 sm:p-6 rounded-3xl shadow-xl border border-indigo-800/50 flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div class="space-y-2 text-center md:text-left">
+                        <div class="inline-flex items-center gap-2 px-3 py-1 bg-indigo-500/20 border border-indigo-400/30 rounded-full text-xs text-indigo-300 font-medium">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                            Jam Sistem Real-Time Terkunci
+                        </div>
+                        <div id="banner-clock" class="text-3xl sm:text-5xl font-mono font-extrabold text-white tracking-wider">
+                            00:00:00 <span class="text-xs sm:text-base font-sans text-indigo-300">WIB</span>
+                        </div>
+                        <p id="banner-date" class="text-xs sm:text-sm text-slate-300">Memuat tanggal sistem...</p>
+                    </div>
+
+                    <!-- Target Jam Kelas Configuration -->
+                    <div class="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/10 w-full md:w-auto min-w-[280px]">
+                        <label class="block text-xs font-bold text-indigo-200 uppercase mb-2 flex items-center justify-between">
+                            <span><i class="fa-solid fa-bullseye text-rose-400 mr-1.5"></i> Target Jam Masuk Kelas</span>
+                            <span class="text-[10px] text-slate-400 font-normal">Dapat Disesuaikan</span>
+                        </label>
+                        <div class="flex items-center gap-2">
+                            <input type="time" id="target-class-time" value="07:00" class="bg-slate-900/80 border border-indigo-500/40 text-white font-mono font-bold text-sm rounded-xl px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                            <button id="save-target-btn" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl transition flex items-center gap-1 shrink-0">
+                                <i class="fa-solid fa-check"></i> Simpan
+                            </button>
+                        </div>
+                        <p class="text-[10px] text-slate-300 mt-2">Jam ini digunakan untuk membandingkan keterlambatan secara otomatis.</p>
+                    </div>
+                </div>
+
+                <!-- Tombol Aksi Langsung (One-Click Live Logging Panel) -->
+                <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-sm border border-slate-200 space-y-4">
+                    <div class="border-b border-slate-100 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                                <i class="fa-solid fa-bolt-lightning text-amber-500"></i> Tombol Aksi Waktu Real-Time
+                            </h2>
+                            <p class="text-xs text-slate-500 mt-0.5">Tekan tombol di bawah sesuai momen kejadian. Waktu akan terkunci otomatis menggunakan jam server/sistem saat ini.</p>
+                        </div>
+                        <span class="text-xs bg-amber-50 text-amber-700 font-semibold px-3 py-1 rounded-full border border-amber-200/60 self-start sm:self-auto">
+                            <i class="fa-solid fa-triangle-exclamation mr-1"></i> Input Manual Dinonaktifkan
+                        </span>
+                    </div>
+
+                    <!-- 4 Main Action Buttons -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
+                        
+                        <!-- 1. Catat Jam Tidur -->
+                        <div class="bg-indigo-50/60 hover:bg-indigo-50 border border-indigo-100 rounded-2xl p-4 transition duration-200 flex flex-col justify-between space-y-3">
+                            <div class="flex items-center justify-between">
+                                <div class="w-10 h-10 bg-indigo-600 text-white rounded-xl flex items-center justify-center shadow-md">
+                                    <i class="fa-solid fa-moon text-lg"></i>
+                                </div>
+                                <span id="status-badge-sleep" class="text-[10px] bg-slate-200 text-slate-600 px-2.5 py-0.5 rounded-full font-semibold">Belum Dicatat</span>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-slate-800 text-sm">Catat Jam Tidur</h3>
+                                <p class="text-[11px] text-slate-500 mt-0.5">Merekam momen kamu mulai tidur malam.</p>
+                                <div id="time-display-sleep" class="text-sm font-mono font-bold text-indigo-700 mt-2 min-h-[20px]">--:--:-- WIB</div>
+                            </div>
+                            <button id="btn-log-sleep" onclick="logLiveTimestamp('sleep')" 
+                                class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl shadow-md transition flex items-center justify-center gap-2 active:scale-95">
+                                <i class="fa-solid fa-fingerprint"></i>
+                                <span>Rekam Jam Tidur</span>
+                            </button>
+                        </div>
+
+                        <!-- 2. Catat Jam Bangun -->
+                        <div class="bg-amber-50/60 hover:bg-amber-50 border border-amber-100 rounded-2xl p-4 transition duration-200 flex flex-col justify-between space-y-3">
+                            <div class="flex items-center justify-between">
+                                <div class="w-10 h-10 bg-amber-500 text-white rounded-xl flex items-center justify-center shadow-md">
+                                    <i class="fa-solid fa-sun text-lg"></i>
+                                </div>
+                                <span id="status-badge-wake" class="text-[10px] bg-slate-200 text-slate-600 px-2.5 py-0.5 rounded-full font-semibold">Belum Dicatat</span>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-slate-800 text-sm">Catat Jam Bangun</h3>
+                                <p class="text-[11px] text-slate-500 mt-0.5">Merekam momen kamu terbangun di pagi hari.</p>
+                                <div id="time-display-wake" class="text-sm font-mono font-bold text-amber-700 mt-2 min-h-[20px]">--:--:-- WIB</div>
+                            </div>
+                            <button id="btn-log-wake" onclick="logLiveTimestamp('wake')" 
+                                class="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs rounded-xl shadow-md transition flex items-center justify-center gap-2 active:scale-95">
+                                <i class="fa-solid fa-fingerprint"></i>
+                                <span>Rekam Jam Bangun</span>
+                            </button>
+                        </div>
+
+                        <!-- 3. Catat Berangkat Kelas -->
+                        <div class="bg-blue-50/60 hover:bg-blue-50 border border-blue-100 rounded-2xl p-4 transition duration-200 flex flex-col justify-between space-y-3">
+                            <div class="flex items-center justify-between">
+                                <div class="w-10 h-10 bg-blue-600 text-white rounded-xl flex items-center justify-center shadow-md">
+                                    <i class="fa-solid fa-person-walking-luggage text-lg"></i>
+                                </div>
+                                <span id="status-badge-depart" class="text-[10px] bg-slate-200 text-slate-600 px-2.5 py-0.5 rounded-full font-semibold">Belum Dicatat</span>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-slate-800 text-sm">Catat Jam Berangkat</h3>
+                                <p class="text-[11px] text-slate-500 mt-0.5">Merekam momen berangkat dari kos/rumah.</p>
+                                <div id="time-display-depart" class="text-sm font-mono font-bold text-blue-700 mt-2 min-h-[20px]">--:--:-- WIB</div>
+                            </div>
+                            <button id="btn-log-depart" onclick="logLiveTimestamp('depart')" 
+                                class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl shadow-md transition flex items-center justify-center gap-2 active:scale-95">
+                                <i class="fa-solid fa-fingerprint"></i>
+                                <span>Rekam Jam Berangkat</span>
+                            </button>
+                        </div>
+
+                        <!-- 4. Catat Masuk Kelas -->
+                        <div class="bg-emerald-50/60 hover:bg-emerald-50 border border-emerald-100 rounded-2xl p-4 transition duration-200 flex flex-col justify-between space-y-3">
+                            <div class="flex items-center justify-between">
+                                <div class="w-10 h-10 bg-emerald-600 text-white rounded-xl flex items-center justify-center shadow-md">
+                                    <i class="fa-solid fa-school text-lg"></i>
+                                </div>
+                                <span id="status-badge-arrive" class="text-[10px] bg-slate-200 text-slate-600 px-2.5 py-0.5 rounded-full font-semibold">Belum Dicatat</span>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-slate-800 text-sm">Catat Tiba / Masuk Kelas</h3>
+                                <p class="text-[11px] text-slate-500 mt-0.5">Merekam momen tiba di dalam ruang kelas.</p>
+                                <div id="time-display-arrive" class="text-sm font-mono font-bold text-emerald-700 mt-2 min-h-[20px]">--:--:-- WIB</div>
+                            </div>
+                            <button id="btn-log-arrive" onclick="logLiveTimestamp('arrive')" 
+                                class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-md transition flex items-center justify-center gap-2 active:scale-95">
+                                <i class="fa-solid fa-fingerprint"></i>
+                                <span>Rekam Tiba di Kelas</span>
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Analysis Summary Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Durasi Tidur -->
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-400 uppercase">Durasi Tidur Malam</p>
+                            <h3 id="analysis-sleep-dur" class="text-2xl font-bold text-slate-800 mt-1">-- Jam</h3>
+                            <p id="analysis-sleep-desc" class="text-[11px] text-slate-500 mt-1">Gunakan tombol rekam tidur & bangun.</p>
+                        </div>
+                        <div class="p-3 bg-indigo-50 text-indigo-600 rounded-2xl text-2xl">
+                            <i class="fa-solid fa-bed"></i>
+                        </div>
+                    </div>
+
+                    <!-- Durasi Persiapan & Perjalanan -->
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-400 uppercase">Persiapan & Perjalanan</p>
+                            <h3 id="analysis-prep-dur" class="text-2xl font-bold text-slate-800 mt-1">-- Mnt / -- Mnt</h3>
+                            <p class="text-[11px] text-slate-500 mt-1">Persiapan Mandi/Sarapan & Perjalanan.</p>
+                        </div>
+                        <div class="p-3 bg-blue-50 text-blue-600 rounded-2xl text-2xl">
+                            <i class="fa-solid fa-route"></i>
+                        </div>
+                    </div>
+
+                    <!-- Status Evaluasi Akhir -->
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-400 uppercase">Status Ketepatan Waktu</p>
+                            <div id="analysis-status-badge" class="mt-1">
+                                <span class="inline-block px-3 py-1 bg-slate-100 text-slate-600 text-xs font-bold rounded-full">Belum Selesai</span>
+                            </div>
+                            <p id="analysis-status-desc" class="text-[11px] text-slate-500 mt-1">Akan terhitung setelah rekam tiba di kelas.</p>
+                        </div>
+                        <div class="p-3 bg-emerald-50 text-emerald-600 rounded-2xl text-2xl">
+                            <i class="fa-solid fa-shield-halved"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabel Riwayat Timestamp Resmi -->
+                <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-sm border border-slate-200 space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                                <i class="fa-solid fa-file-contract text-indigo-600"></i> Log Riwayat Resmi (Timestamp Lock)
+                            </h2>
+                            <p class="text-xs text-slate-500 mt-0.5">Catatan waktu terenkripsi lokal dari jam sistem yang tidak dapat diedit.</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button id="export-btn" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition flex items-center gap-1 border border-slate-300">
+                                <i class="fa-solid fa-file-csv text-emerald-600"></i> Ekspor CSV
+                            </button>
+                            <button id="clear-all-btn" class="px-3 py-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 text-xs font-semibold rounded-xl transition border border-rose-200 flex items-center gap-1">
+                                <i class="fa-solid fa-trash-can"></i> Hapus
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Responsive Table Wrapper -->
+                    <div class="overflow-x-auto rounded-2xl border border-slate-200">
+                        <table class="w-full text-left text-xs sm:text-sm text-slate-600">
+                            <thead class="bg-slate-50 text-slate-700 uppercase font-bold text-[11px] border-b border-slate-200">
+                                <tr>
+                                    <th class="p-3.5">Tanggal</th>
+                                    <th class="p-3.5">Jam Tidur</th>
+                                    <th class="p-3.5">Jam Bangun</th>
+                                    <th class="p-3.5">Berangkat</th>
+                                    <th class="p-3.5">Tiba di Kelas</th>
+                                    <th class="p-3.5">Durasi Tidur</th>
+                                    <th class="p-3.5">Evaluasi Status</th>
+                                    <th class="p-3.5 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="log-table-body" class="divide-y divide-slate-100 font-mono">
+                                <!-- JS content inserted here -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Empty State Graphic -->
+                    <div id="empty-state" class="hidden py-10 text-center space-y-3">
+                        <div class="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto text-2xl">
+                            <i class="fa-solid fa-folder-open"></i>
+                        </div>
+                        <p class="text-slate-500 font-medium text-sm">Belum ada riwayat catatan harian yang terkunci.</p>
+                        <p class="text-slate-400 text-xs">Gunakan tombol rekam di atas untuk menambah catatan hari ini.</p>
+                    </div>
+                </div>
+
+            </main>
+
+            <!-- Footer -->
+            <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500 mt-auto">
+                <p>&copy; Manage Waktumu, Atasi Keterlambatanku &bull; Sistem Anti-Manipulasi Timestamp</p>
+            </footer>
+        </div>
+
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // LocalStorage Keys
+        const STORAGE_KEY_AUTH = 'manage_waktumu_auth_v2';
+        const STORAGE_KEY_LOGS = 'manage_waktumu_logs_v2';
+        const STORAGE_KEY_TARGET = 'manage_waktumu_target_v2';
+        const DEFAULT_CREDS = { username: 'admin', password: 'admin123' };
+
+        // State untuk Sesi Hari Ini
+        let todaySession = {
+            date: '',
+            sleep: null,
+            wake: null,
+            depart: null,
+            arrive: null
+        };
+
+        // DOM Elements
+        const loginPage = document.getElementById('login-page');
+        const dashboardPage = document.getElementById('dashboard-page');
+        const loginForm = document.getElementById('login-form');
+        const logoutBtn = document.getElementById('logout-btn');
+        const usernameBadge = document.getElementById('username-badge');
+
+        const liveTimeNavbar = document.getElementById('live-time-navbar');
+        const liveDateNavbar = document.getElementById('live-date-navbar');
+        const bannerClock = document.getElementById('banner-clock');
+        const bannerDate = document.getElementById('banner-date');
+        const targetClassTimeInput = document.getElementById('target-class-time');
+        const saveTargetBtn = document.getElementById('save-target-btn');
+
+        const logTableBody = document.getElementById('log-table-body');
+        const emptyState = document.getElementById('empty-state');
+        const clearAllBtn = document.getElementById('clear-all-btn');
+        const exportBtn = document.getElementById('export-btn');
+
+        // Toast System
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            const bgColors = {
+                success: 'bg-emerald-600 text-white',
+                error: 'bg-rose-600 text-white',
+                warning: 'bg-amber-500 text-white',
+                info: 'bg-indigo-600 text-white'
+            };
+
+            const icons = {
+                success: 'fa-circle-check',
+                error: 'fa-circle-exclamation',
+                warning: 'fa-triangle-exclamation',
+                info: 'fa-circle-info'
+            };
+
+            toast.className = `flex items-center gap-2.5 px-4 py-3 rounded-2xl shadow-xl font-medium text-xs sm:text-sm transition-all transform translate-y-2 opacity-0 pointer-events-auto ${bgColors[type] || bgColors.info}`;
+            toast.innerHTML = `<i class="fa-solid ${icons[type] || icons.info}"></i> <span>${message}</span>`;
+
+            container.appendChild(toast);
+
+            setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 10);
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3200);
+        }
+
+        // Realtime Clock Loop
+        function startRealtimeClock() {
+            function update() {
+                const now = new Date();
+                
+                // Format Waktu: HH:MM:SS
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const seconds = String(now.getSeconds()).padStart(2, '0');
+                const timeString = `${hours}:${minutes}:${seconds} WIB`;
+
+                // Format Tanggal
+                const options = { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' };
+                const dateString = now.toLocaleDateString('id-ID', options);
+
+                liveTimeNavbar.textContent = timeString;
+                liveDateNavbar.textContent = dateString;
+                
+                bannerClock.innerHTML = `${hours}:${minutes}:${seconds} <span class="text-xs sm:text-base font-sans text-indigo-300">WIB</span>`;
+                bannerDate.textContent = dateString;
+            }
+            update();
+            setInterval(update, 1000);
+        }
+
+        // AUTHENTICATION
+        function checkAuthStatus() {
+            const auth = JSON.parse(localStorage.getItem(STORAGE_KEY_AUTH));
+            if (auth && auth.isLoggedIn) {
+                loginPage.classList.add('hidden');
+                dashboardPage.classList.remove('hidden');
+                usernameBadge.textContent = auth.username || 'admin';
+                initDashboard();
+            } else {
+                loginPage.classList.remove('hidden');
+                dashboardPage.classList.add('hidden');
+            }
+        }
+
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const u = document.getElementById('login-username').value.trim();
+            const p = document.getElementById('login-password').value.trim();
+
+            if (u === DEFAULT_CREDS.username && p === DEFAULT_CREDS.password) {
+                localStorage.setItem(STORAGE_KEY_AUTH, JSON.stringify({ isLoggedIn: true, username: u }));
+                showToast(`Login berhasil! Selamat datang, ${u}.`, 'success');
+                checkAuthStatus();
+            } else {
+                showToast('Username atau password salah!', 'error');
+            }
+        });
+
+        logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem(STORAGE_KEY_AUTH);
+            showToast('Sesi berakhir. Anda telah keluar.', 'info');
+            checkAuthStatus();
+        });
+
+        // TIME UTILITY CALCULATIONS
+        function getISOToday() {
+            return new Date().toISOString().split('T')[0];
+        }
+
+        function getCurrentTimeString() {
+            const now = new Date();
+            const h = String(now.getHours()).padStart(2, '0');
+            const m = String(now.getMinutes()).padStart(2, '0');
+            const s = String(now.getSeconds()).padStart(2, '0');
+            return `${h}:${m}:${s}`;
+        }
+
+        function timeToMinutes(timeStr) {
+            if (!timeStr) return 0;
+            const parts = timeStr.split(':').map(Number);
+            return parts[0] * 60 + parts[1];
+        }
+
+        // Calculate sleep duration in hours
+        function calculateSleepHours(sleepTime, wakeTime) {
+            if (!sleepTime || !wakeTime) return null;
+            let sleepMin = timeToMinutes(sleepTime);
+            let wakeMin = timeToMinutes(wakeTime);
+
+            if (wakeMin <= sleepMin) wakeMin += 24 * 60; // Overnight
+            return ((wakeMin - sleepMin) / 60).toFixed(1);
+        }
+
+        // ONE-CLICK LIVE TIMESTAMP LOGGING
+        window.logLiveTimestamp = function(type) {
+            const timeNow = getCurrentTimeString();
+            const todayStr = getISOToday();
+
+            // Setup session for today
+            if (todaySession.date !== todayStr) {
+                todaySession = { date: todayStr, sleep: null, wake: null, depart: null, arrive: null };
+            }
+
+            if (type === 'sleep') {
+                todaySession.sleep = timeNow;
+                showToast(`Jam Tidur terkunci: ${timeNow} WIB`, 'success');
+            } else if (type === 'wake') {
+                todaySession.wake = timeNow;
+                showToast(`Jam Bangun terkunci: ${timeNow} WIB`, 'success');
+            } else if (type === 'depart') {
+                todaySession.depart = timeNow;
+                showToast(`Jam Berangkat terkunci: ${timeNow} WIB`, 'success');
+            } else if (type === 'arrive') {
+                todaySession.arrive = timeNow;
+                showToast(`Jam Tiba di Kelas terkunci: ${timeNow} WIB`, 'success');
+            }
+
+            updateActionUI();
+            checkAndAutoSaveTodayLog();
+        };
+
+        function updateActionUI() {
+            const types = ['sleep', 'wake', 'depart', 'arrive'];
+
+            types.forEach(type => {
+                const badge = document.getElementById(`status-badge-${type}`);
+                const display = document.getElementById(`time-display-${type}`);
+                const val = todaySession[type];
+
+                if (val) {
+                    badge.textContent = 'Terkunci';
+                    badge.className = 'text-[10px] bg-emerald-100 text-emerald-700 font-bold px-2.5 py-0.5 rounded-full border border-emerald-300';
+                    display.textContent = `${val} WIB`;
+                } else {
+                    badge.textContent = 'Belum Dicatat';
+                    badge.className = 'text-[10px] bg-slate-200 text-slate-600 font-semibold px-2.5 py-0.5 rounded-full';
+                    display.textContent = '--:--:-- WIB';
+                }
+            });
+
+            // Update Analysis Summary
+            const sleepDur = calculateSleepHours(todaySession.sleep, todaySession.wake);
+            const sleepEl = document.getElementById('analysis-sleep-dur');
+            const sleepDescEl = document.getElementById('analysis-sleep-desc');
+
+            if (sleepDur !== null) {
+                sleepEl.textContent = `${sleepDur} Jam`;
+                sleepDescEl.textContent = parseFloat(sleepDur) < 6 
+                    ? '⚠️ Durasi tidur tergolong kurang (<6 jam).' 
+                    : '✅ Durasi tidur mencukupi.';
+            } else {
+                sleepEl.textContent = '-- Jam';
+                sleepDescEl.textContent = 'Rekam jam tidur & bangun untuk hitung.';
+            }
+
+            // Prep & Travel
+            const prepEl = document.getElementById('analysis-prep-dur');
+            let prepMin = '--';
+            let travelMin = '--';
+
+            if (todaySession.wake && todaySession.depart) {
+                prepMin = Math.max(0, timeToMinutes(todaySession.depart) - timeToMinutes(todaySession.wake));
+            }
+            if (todaySession.depart && todaySession.arrive) {
+                travelMin = Math.max(0, timeToMinutes(todaySession.arrive) - timeToMinutes(todaySession.depart));
+            }
+            prepEl.textContent = `${prepMin} mnt / ${travelMin} mnt`;
+
+            // Evaluation Badge
+            const statusBadge = document.getElementById('analysis-status-badge');
+            const statusDesc = document.getElementById('analysis-status-desc');
+            const targetTime = targetClassTimeInput.value || '07:00';
+
+            if (todaySession.arrive) {
+                const arriveMin = timeToMinutes(todaySession.arrive);
+                const targetMin = timeToMinutes(targetTime);
+                const diff = arriveMin - targetMin;
+
+                if (diff <= 0) {
+                    statusBadge.innerHTML = `<span class="inline-block px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full border border-emerald-300"><i class="fa-solid fa-circle-check"></i> Tepat Waktu</span>`;
+                    statusDesc.textContent = `Tiba ${Math.abs(diff)} menit lebih awal dari target ${targetTime}.`;
+                } else {
+                    statusBadge.innerHTML = `<span class="inline-block px-3 py-1 bg-rose-100 text-rose-700 text-xs font-bold rounded-full border border-rose-300"><i class="fa-solid fa-triangle-exclamation"></i> Terlambat ${diff} Menit</span>`;
+                    statusDesc.textContent = `Melebihi target jam masuk (${targetTime}).`;
+                }
+            } else {
+                statusBadge.innerHTML = `<span class="inline-block px-3 py-1 bg-slate-100 text-slate-600 text-xs font-bold rounded-full">Belum Selesai</span>`;
+                statusDesc.textContent = 'Akan terhitung setelah rekam tiba di kelas.';
+            }
+        }
+
+        // Save Completed Day Session
+        function checkAndAutoSaveTodayLog() {
+            // Uniq ID per date
+            const logs = getLogs();
+            const existingIndex = logs.findIndex(l => l.date === todaySession.date);
+
+            const targetTime = targetClassTimeInput.value || '07:00';
+            const sleepDur = calculateSleepHours(todaySession.sleep, todaySession.wake);
+
+            let statusStr = 'Incomplete';
+            if (todaySession.arrive) {
+                const diff = timeToMinutes(todaySession.arrive) - timeToMinutes(targetTime);
+                statusStr = diff <= 0 ? 'Tepat Waktu' : `Terlambat ${diff}m`;
+            }
+
+            const record = {
+                id: 'log_' + todaySession.date,
+                date: todaySession.date,
+                sleep: todaySession.sleep || '--:--',
+                wake: todaySession.wake || '--:--',
+                depart: todaySession.depart || '--:--',
+                arrive: todaySession.arrive || '--:--',
+                targetClass: targetTime,
+                sleepDuration: sleepDur ? `${sleepDur} Jam` : '--',
+                status: statusStr,
+                timestampLocked: true
+            };
+
+            if (existingIndex >= 0) {
+                logs[existingIndex] = record;
+            } else {
+                logs.push(record);
+            }
+
+            saveLogs(logs);
+            renderLogs();
+        }
+
+        // LOCAL STORAGE OPERATIONS
+        function getLogs() {
+            return JSON.parse(localStorage.getItem(STORAGE_KEY_LOGS)) || [];
+        }
+
+        function saveLogs(logs) {
+            localStorage.setItem(STORAGE_KEY_LOGS, JSON.stringify(logs));
+        }
+
+        function renderLogs() {
+            const logs = getLogs();
+            logTableBody.innerHTML = '';
+
+            if (logs.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            logs.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            logs.forEach(log => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition duration-150";
+
+                const isLate = log.status.includes('Terlambat');
+                const badgeClass = isLate 
+                    ? 'bg-rose-100 text-rose-700 border-rose-300' 
+                    : (log.status === 'Tepat Waktu' ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : 'bg-slate-100 text-slate-600 border-slate-300');
+
+                tr.innerHTML = `
+                    <td class="p-3.5 font-bold text-slate-800 whitespace-nowrap">
+                        ${log.date}
+                        <span class="block text-[9px] text-indigo-600 font-sans font-semibold mt-0.5"><i class="fa-solid fa-lock"></i> Verified</span>
+                    </td>
+                    <td class="p-3.5 whitespace-nowrap text-slate-600">${log.sleep}</td>
+                    <td class="p-3.5 whitespace-nowrap text-slate-600">${log.wake}</td>
+                    <td class="p-3.5 whitespace-nowrap text-slate-600">${log.depart}</td>
+                    <td class="p-3.5 whitespace-nowrap font-bold text-slate-800">${log.arrive}</td>
+                    <td class="p-3.5 whitespace-nowrap text-slate-700 font-semibold">${log.sleepDuration}</td>
+                    <td class="p-3.5 whitespace-nowrap">
+                        <span class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${badgeClass}">
+                            ${log.status}
+                        </span>
+                    </td>
+                    <td class="p-3.5 whitespace-nowrap text-center">
+                        <button onclick="deleteLog('${log.id}')" class="p-1.5 text-slate-400 hover:text-rose-600 transition" title="Hapus">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </td>
+                `;
+
+                logTableBody.appendChild(tr);
+            });
+        }
+
+        window.deleteLog = function(id) {
+            let logs = getLogs().filter(l => l.id !== id);
+            saveLogs(logs);
+            showToast('Catatan dihapus.', 'info');
+            renderLogs();
+        };
+
+        clearAllBtn.addEventListener('click', () => {
+            if (getLogs().length === 0) return showToast('Riwayat sudah kosong.', 'info');
+            if (confirm('Hapus seluruh riwayat terenkripsi?')) {
+                localStorage.removeItem(STORAGE_KEY_LOGS);
+                todaySession = { date: getISOToday(), sleep: null, wake: null, depart: null, arrive: null };
+                updateActionUI();
+                renderLogs();
+                showToast('Seluruh riwayat berhasil dibersihkan.', 'success');
+            }
+        });
+
+        // Target Time Config
+        saveTargetBtn.addEventListener('click', () => {
+            const val = targetClassTimeInput.value;
+            localStorage.setItem(STORAGE_KEY_TARGET, val);
+            showToast(`Target masuk kelas diperbarui ke ${val}`, 'success');
+            updateActionUI();
+        });
+
+        // Export CSV
+        exportBtn.addEventListener('click', () => {
+            const logs = getLogs();
+            if (logs.length === 0) return showToast('Tidak ada data untuk diekspor.', 'warning');
+
+            let csv = 'Tanggal,Jam Tidur,Jam Bangun,Jam Berangkat,Tiba di Kelas,Target Kelas,Durasi Tidur,Status\n';
+            logs.forEach(l => {
+                csv += `${l.date},${l.sleep},${l.wake},${l.depart},${l.arrive},${l.targetClass},${l.sleepDuration},${l.status}\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('href', url);
+            a.setAttribute('download', `ManageWaktumu_Export_${getISOToday()}.csv`);
+            a.click();
+            showToast('File CSV berhasil diunduh.', 'success');
+        });
+
+        // Dashboard Init
+        function initDashboard() {
+            startRealtimeClock();
+            const savedTarget = localStorage.getItem(STORAGE_KEY_TARGET);
+            if (savedTarget) targetClassTimeInput.value = savedTarget;
+
+            // Load Today's Session if exists
+            const logs = getLogs();
+            const todayStr = getISOToday();
+            const todayLog = logs.find(l => l.date === todayStr);
+
+            if (todayLog) {
+                todaySession = {
+                    date: todayStr,
+                    sleep: todayLog.sleep !== '--:--' ? todayLog.sleep : null,
+                    wake: todayLog.wake !== '--:--' ? todayLog.wake : null,
+                    depart: todayLog.depart !== '--:--' ? todayLog.depart : null,
+                    arrive: todayLog.arrive !== '--:--' ? todayLog.arrive : null
+                };
+            } else {
+                todaySession.date = todayStr;
+            }
+
+            updateActionUI();
+            renderLogs();
+        }
+
+        window.onload = function() {
+            checkAuthStatus();
+        };
+    </script>
+</body>
+</html>
