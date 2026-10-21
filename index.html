@@ -11,9 +11,9 @@
     <!-- Firebase SDK (v10 via CDN) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // Konfigurasi Firebase dari akunmu
+        // Konfigurasi Firebase milikmu
         const firebaseConfig = {
             apiKey: "AIzaSyCMNqESd1NEZEAwMnsuI0VLXwEbbem3TUY",
             authDomain: "manage-waktumu.firebaseapp.com",
@@ -24,19 +24,20 @@
             measurementId: "G-PNYMSEYQ29"
         };
 
-        // Inisialisasi Firebase & Firestore
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Helper global untuk UI HTML
         window.db = db;
         window.doc = doc;
         window.setDoc = setDoc;
         window.getDoc = getDoc;
         window.onSnapshot = onSnapshot;
+        window.collection = collection;
+        window.query = query;
+        window.orderBy = orderBy;
     </script>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen font-sans antialiased">
+<body class="bg-slate-900 text-slate-100 min-h-screen font-sans antialiased pb-12">
 
     <!-- Header Navigation -->
     <header class="bg-slate-800 border-b border-slate-700 sticky top-0 z-50">
@@ -68,15 +69,22 @@
                 <div id="liveDate" class="text-sm text-slate-400 mt-1 font-medium">Loading tanggal...</div>
             </div>
 
-            <!-- Target Jam Masuk Kelas -->
-            <div class="pt-2 border-t border-slate-700/60 flex items-center justify-between gap-3 bg-slate-900/50 p-3 rounded-xl border border-slate-800">
-                <div class="text-left">
-                    <p class="text-xs text-slate-400 font-medium">Target Masuk Kelas</p>
-                    <p id="targetDisplay" class="text-base font-bold text-indigo-300">07:00 WIB</p>
+            <!-- Input Jadwal Mata Kuliah & Target Jam -->
+            <div class="pt-3 border-t border-slate-700/60 space-y-3 bg-slate-900/50 p-3 rounded-xl border border-slate-800 text-left">
+                <div>
+                    <label class="text-xs text-slate-400 font-medium block mb-1">Mata Kuliah / Kelas Hari Ini</label>
+                    <input type="text" id="matkulInput" placeholder="Contoh: Algoritma & Pemrograman" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-indigo-500">
                 </div>
-                <div class="flex items-center gap-2">
-                    <input type="time" id="targetInput" value="07:00" class="bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 text-sm text-white focus:outline-none focus:border-indigo-500">
-                    <button onclick="saveTarget()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition">Simpan</button>
+                
+                <div class="flex items-center justify-between gap-3">
+                    <div>
+                        <p class="text-xs text-slate-400 font-medium">Target Masuk Kelas</p>
+                        <p id="targetDisplay" class="text-sm font-bold text-indigo-300">07:00 WIB</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input type="time" id="targetInput" value="07:00" class="bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 text-sm text-white focus:outline-none focus:border-indigo-500">
+                        <button onclick="saveTarget()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition">Simpan Jadwal</button>
+                    </div>
                 </div>
             </div>
         </section>
@@ -172,25 +180,64 @@
             </div>
         </section>
 
+        <!-- Rekapan Daily (Riwayat Harian) -->
+        <section class="bg-slate-800/80 p-5 rounded-2xl border border-slate-700 space-y-4">
+            <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                <i class="fa-solid fa-list-check text-emerald-400"></i> Rekapan Daily (Riwayat Harian)
+            </h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-xs text-left text-slate-300">
+                    <thead class="bg-slate-900/80 text-slate-400 uppercase font-semibold border-b border-slate-700">
+                        <tr>
+                            <th class="p-2">Tanggal</th>
+                            <th class="p-2">Mata Kuliah</th>
+                            <th class="p-2">Tidur - Bangun</th>
+                            <th class="p-2">Masuk Kelas</th>
+                            <th class="p-2">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rekapanTableBody" class="divide-y divide-slate-700/50">
+                        <tr>
+                            <td colspan="5" class="text-center p-3 text-slate-500">Memuat riwayat harian...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
     </main>
 
     <script>
         let todayKey = new Date().toISOString().split('T')[0];
-        let todayData = { tidur: null, bangun: null, berangkat: null, masuk: null, target: "07:00" };
+        let todayData = { matkul: "", tidur: null, bangun: null, berangkat: null, masuk: null, target: "07:00" };
 
         // Jam Digital
         setInterval(() => {
             const now = new Date();
-            document.getElementById('liveClock').innerText = now.toLocaleTimeString('id-ID', { hour12: false });
+            document.getElementById('liveClock').innerText = now.toLocaleTimeString('id-ID', { hour12: false }).replace(/\./g, ':');
             document.getElementById('liveDate').innerText = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
         }, 1000);
 
-        // Firestore Listen Data Hari Ini secara Realtime
+        // Helper Konversi Jam "HH:MM" atau "HH.MM.SS" ke Menit
+        function parseToMinutes(timeStr) {
+            if (!timeStr) return null;
+            // Normalisasi pemisah jam menjadi ':'
+            const cleanStr = timeStr.replace(/\./g, ':');
+            const parts = cleanStr.split(':').map(Number);
+            if (parts.length >= 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+                return parts[0] * 60 + parts[1];
+            }
+            return null;
+        }
+
+        // Firestore Listen Data Hari Ini & Rekapan Daily
         function initFirebaseSync() {
             if (!window.db) {
                 setTimeout(initFirebaseSync, 500);
                 return;
             }
+
+            // Sync Data Hari Ini
             const docRef = window.doc(window.db, "catatan_harian", todayKey);
             window.onSnapshot(docRef, (docSnap) => {
                 if (docSnap.exists()) {
@@ -199,6 +246,53 @@
                 } else {
                     updateUI();
                 }
+            });
+
+            // Sync Tabel Rekapan Daily
+            const colRef = window.collection(window.db, "catatan_harian");
+            window.onSnapshot(colRef, (snapshot) => {
+                const tbody = document.getElementById('rekapanTableBody');
+                tbody.innerHTML = '';
+
+                if (snapshot.empty) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center p-3 text-slate-500">Belum ada rekapan harian.</td></tr>';
+                    return;
+                }
+
+                let docs = [];
+                snapshot.forEach(doc => {
+                    docs.push({ id: doc.id, ...doc.data() });
+                });
+
+                // Urutkan tanggal terbaru di paling atas
+                docs.sort((a, b) => b.id.localeCompare(a.id));
+
+                docs.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.className = "hover:bg-slate-700/30 transition";
+
+                    const masukMins = parseToMinutes(item.masuk);
+                    const targetMins = parseToMinutes(item.target || "07:00");
+                    let statusBadge = `<span class="text-slate-500">-</span>`;
+
+                    if (masukMins !== null && targetMins !== null) {
+                        const diff = masukMins - targetMins;
+                        if (diff <= 0) {
+                            statusBadge = `<span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold text-[10px]">Tepat Waktu</span>`;
+                        } else {
+                            statusBadge = `<span class="px-2 py-0.5 rounded bg-rose-500/20 text-rose-400 font-bold text-[10px]">+${diff}m Terlambat</span>`;
+                        }
+                    }
+
+                    row.innerHTML = `
+                        <td class="p-2 font-mono text-[11px]">${item.id}</td>
+                        <td class="p-2 font-medium text-white">${item.matkul || '-'}</td>
+                        <td class="p-2 text-slate-400">${item.tidur || '-'} / ${item.bangun || '-'}</td>
+                        <td class="p-2 font-bold text-indigo-300">${item.masuk || '-'}</td>
+                        <td class="p-2">${statusBadge}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
             });
         }
 
@@ -210,15 +304,16 @@
 
         function recordTime(type) {
             const now = new Date();
-            const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+            const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).replace(/\./g, ':');
             todayData[type] = timeStr;
+            todayData.matkul = document.getElementById('matkulInput').value;
             saveToFirestore();
             updateUI();
         }
 
         function saveTarget() {
-            const targetVal = document.getElementById('targetInput').value;
-            todayData.target = targetVal;
+            todayData.target = document.getElementById('targetInput').value;
+            todayData.matkul = document.getElementById('matkulInput').value;
             saveToFirestore();
             updateUI();
         }
@@ -229,20 +324,21 @@
             document.getElementById('val-berangkat').innerText = todayData.berangkat ? `${todayData.berangkat} WIB` : 'Belum dicatat';
             document.getElementById('val-masuk').innerText = todayData.masuk ? `${todayData.masuk} WIB` : 'Belum dicatat';
             document.getElementById('targetDisplay').innerText = `${todayData.target || '07:00'} WIB`;
+            if (todayData.matkul && !document.getElementById('matkulInput').value) {
+                document.getElementById('matkulInput').value = todayData.matkul;
+            }
 
             calculateEvaluations();
         }
 
         function calculateEvaluations() {
-            // Evaluasi Keterlambatan
             const evalBadge = document.getElementById('evalBadge');
-            if (todayData.masuk && todayData.target) {
-                const [hM, mM] = todayData.masuk.split(':').map(Number);
-                const [hT, mT] = todayData.target.split(':').map(Number);
-                const masukMinutes = hM * 60 + mM;
-                const targetMinutes = hT * 60 + mT;
-                const diff = masukMinutes - targetMinutes;
+            const masukMins = parseToMinutes(todayData.masuk);
+            const targetMins = parseToMinutes(todayData.target || "07:00");
 
+            // Evaluasi Keterlambatan
+            if (masukMins !== null && targetMins !== null) {
+                const diff = masukMins - targetMins;
                 if (diff <= 0) {
                     evalBadge.className = "p-3 rounded-xl bg-emerald-900/50 border border-emerald-500/50 text-center font-bold text-emerald-400 text-sm";
                     evalBadge.innerText = `🎉 Tepat Waktu! (${Math.abs(diff)} menit lebih awal)`;
@@ -250,24 +346,30 @@
                     evalBadge.className = "p-3 rounded-xl bg-rose-900/50 border border-rose-500/50 text-center font-bold text-rose-400 text-sm";
                     evalBadge.innerText = `⚠️ Terlambat ${diff} Menit dari target!`;
                 }
+            } else {
+                evalBadge.className = "p-3 rounded-xl bg-slate-900 border border-slate-700 text-center font-bold text-slate-400 text-sm";
+                evalBadge.innerText = "Lengkapi catatan waktu untuk melihat evaluasi";
             }
 
             // Durasi Tidur
-            if (todayData.tidur && todayData.bangun) {
-                const [hT, mT] = todayData.tidur.split(':').map(Number);
-                const [hB, mB] = todayData.bangun.split(':').map(Number);
-                let dur = (hB * 60 + mB) - (hT * 60 + mT);
+            const tidurMins = parseToMinutes(todayData.tidur);
+            const bangunMins = parseToMinutes(todayData.bangun);
+            if (tidurMins !== null && bangunMins !== null) {
+                let dur = bangunMins - tidurMins;
                 if (dur < 0) dur += 24 * 60; // Lintas malam
                 document.getElementById('durasiTidur').innerText = `${Math.floor(dur / 60)} jam ${dur % 60} menit`;
+            } else {
+                document.getElementById('durasiTidur').innerText = "-";
             }
 
             // Durasi Perjalanan
-            if (todayData.berangkat && todayData.masuk) {
-                const [hB, mB] = todayData.berangkat.split(':').map(Number);
-                const [hM, mM] = todayData.masuk.split(':').map(Number);
-                let dur = (hM * 60 + mM) - (hB * 60 + mB);
+            const berangkatMins = parseToMinutes(todayData.berangkat);
+            if (berangkatMins !== null && masukMins !== null) {
+                let dur = masukMins - berangkatMins;
                 if (dur < 0) dur += 24 * 60;
                 document.getElementById('durasiPerjalanan').innerText = `${dur} menit`;
+            } else {
+                document.getElementById('durasiPerjalanan').innerText = "-";
             }
         }
 
