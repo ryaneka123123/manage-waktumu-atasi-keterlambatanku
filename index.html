@@ -11,7 +11,7 @@
     <!-- Firebase SDK (v10 via CDN) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         // Konfigurasi Firebase milikmu
         const firebaseConfig = {
@@ -33,8 +33,6 @@
         window.getDoc = getDoc;
         window.onSnapshot = onSnapshot;
         window.collection = collection;
-        window.query = query;
-        window.orderBy = orderBy;
     </script>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen font-sans antialiased pb-12">
@@ -48,7 +46,7 @@
                 </div>
                 <div>
                     <h1 class="font-bold text-lg leading-tight text-white">Manage Waktumu</h1>
-                    <p class="text-xs text-indigo-400 font-medium">Atasi Keterlambatanku (Cloud Sync)</p>
+                    <p class="text-xs text-indigo-400 font-medium">Atasi Keterlambatanku (Multi-Matkul)</p>
                 </div>
             </div>
             <span id="syncStatus" class="px-2.5 py-1 text-xs rounded-full bg-emerald-500/20 text-emerald-400 font-medium flex items-center gap-1.5">
@@ -69,11 +67,11 @@
                 <div id="liveDate" class="text-sm text-slate-400 mt-1 font-medium">Loading tanggal...</div>
             </div>
 
-            <!-- Input Jadwal Mata Kuliah & Target Jam -->
+            <!-- Input Mata Kuliah Sesi Ini -->
             <div class="pt-3 border-t border-slate-700/60 space-y-3 bg-slate-900/50 p-3 rounded-xl border border-slate-800 text-left">
                 <div>
-                    <label class="text-xs text-slate-400 font-medium block mb-1">Mata Kuliah / Kelas Hari Ini</label>
-                    <input type="text" id="matkulInput" placeholder="Contoh: Algoritma & Pemrograman" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-indigo-500">
+                    <label class="text-xs text-indigo-300 font-semibold block mb-1">Pilih / Ketik Mata Kuliah Sesi Ini:</label>
+                    <input type="text" id="matkulInput" placeholder="Contoh: Matkul 1 (Algoritma) / Matkul 2 (Kalkulus)" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 font-medium">
                 </div>
                 
                 <div class="flex items-center justify-between gap-3">
@@ -83,7 +81,7 @@
                     </div>
                     <div class="flex items-center gap-2">
                         <input type="time" id="targetInput" value="07:00" class="bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 text-sm text-white focus:outline-none focus:border-indigo-500">
-                        <button onclick="saveTarget()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition">Simpan Jadwal</button>
+                        <button onclick="saveTarget()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition">Simpan Sesi</button>
                     </div>
                 </div>
             </div>
@@ -94,6 +92,14 @@
             <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-2">
                 <i class="fa-solid fa-bolt text-amber-400"></i> Tombol Catat Waktu Real-Time
             </h2>
+
+            <!-- Info tidur & bangun harian -->
+            <div class="bg-indigo-950/40 p-3 rounded-xl border border-indigo-800/50 text-xs text-indigo-300 flex justify-between items-center">
+                <span><i class="fa-solid fa-info-circle mr-1"></i> Jam Tidur/Bangun otomatis mengikuti catatan pertama hari ini.</span>
+                <button onclick="resetSesiBaru()" class="bg-indigo-800 hover:bg-indigo-700 text-white px-2.5 py-1 rounded text-[11px] font-medium">
+                    + Sesi Matkul Baru
+                </button>
+            </div>
 
             <!-- 1. Catat Tidur -->
             <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 flex items-center justify-between">
@@ -163,7 +169,7 @@
         <!-- Evaluation & Status Card -->
         <section class="bg-slate-800/80 p-5 rounded-2xl border border-slate-700 space-y-3">
             <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-                <i class="fa-solid fa-chart-line text-indigo-400"></i> Evaluasi Otomatis Hari Ini
+                <i class="fa-solid fa-chart-line text-indigo-400"></i> Evaluasi Otomatis Sesi Ini
             </h2>
             <div id="evalBadge" class="p-3 rounded-xl bg-slate-900 border border-slate-700 text-center font-bold text-slate-400 text-sm">
                 Lengkapi catatan waktu untuk melihat evaluasi
@@ -180,10 +186,10 @@
             </div>
         </section>
 
-        <!-- Rekapan Daily (Riwayat Harian) -->
+        <!-- Rekapan Daily (Riwayat Harian Multi Matkul) -->
         <section class="bg-slate-800/80 p-5 rounded-2xl border border-slate-700 space-y-4">
             <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-                <i class="fa-solid fa-list-check text-emerald-400"></i> Rekapan Daily (Riwayat Harian)
+                <i class="fa-solid fa-list-check text-emerald-400"></i> Rekapan Harian Semua Kelas
             </h2>
             <div class="overflow-x-auto">
                 <table class="w-full text-xs text-left text-slate-300">
@@ -191,14 +197,13 @@
                         <tr>
                             <th class="p-2">Tanggal</th>
                             <th class="p-2">Mata Kuliah</th>
-                            <th class="p-2">Tidur - Bangun</th>
-                            <th class="p-2">Masuk Kelas</th>
+                            <th class="p-2">Berangkat - Masuk</th>
                             <th class="p-2">Status</th>
                         </tr>
                     </thead>
                     <tbody id="rekapanTableBody" class="divide-y divide-slate-700/50">
                         <tr>
-                            <td colspan="5" class="text-center p-3 text-slate-500">Memuat riwayat harian...</td>
+                            <td colspan="4" class="text-center p-3 text-slate-500">Memuat riwayat harian...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -208,7 +213,9 @@
     </main>
 
     <script>
-        let todayKey = new Date().toISOString().split('T')[0];
+        let todayDate = new Date().toISOString().split('T')[0];
+        let dailySleepData = { tidur: null, bangun: null };
+        let activeSesiKey = null;
         let todayData = { matkul: "", tidur: null, bangun: null, berangkat: null, masuk: null, target: "07:00" };
 
         // Jam Digital
@@ -218,10 +225,8 @@
             document.getElementById('liveDate').innerText = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
         }, 1000);
 
-        // Helper Konversi Jam "HH:MM" atau "HH.MM.SS" ke Menit
         function parseToMinutes(timeStr) {
             if (!timeStr) return null;
-            // Normalisasi pemisah jam menjadi ':'
             const cleanStr = timeStr.replace(/\./g, ':');
             const parts = cleanStr.split(':').map(Number);
             if (parts.length >= 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
@@ -230,32 +235,39 @@
             return null;
         }
 
-        // Firestore Listen Data Hari Ini & Rekapan Daily
+        function generateSesiKey() {
+            const matkulVal = document.getElementById('matkulInput').value.trim() || 'Matkul_1';
+            const cleanMatkul = matkulVal.replace(/[^a-zA-Z0-9]/g, '_');
+            return `${todayDate}_${cleanMatkul}`;
+        }
+
         function initFirebaseSync() {
             if (!window.db) {
                 setTimeout(initFirebaseSync, 500);
                 return;
             }
 
-            // Sync Data Hari Ini
-            const docRef = window.doc(window.db, "catatan_harian", todayKey);
-            window.onSnapshot(docRef, (docSnap) => {
+            activeSesiKey = generateSesiKey();
+
+            // Load Tidur & Bangun Harian (jika ada)
+            const dailySleepRef = window.doc(window.db, "tidur_harian", todayDate);
+            window.onSnapshot(dailySleepRef, (docSnap) => {
                 if (docSnap.exists()) {
-                    todayData = { ...todayData, ...docSnap.data() };
-                    updateUI();
-                } else {
+                    dailySleepData = docSnap.data();
+                    if (dailySleepData.tidur) todayData.tidur = dailySleepData.tidur;
+                    if (dailySleepData.bangun) todayData.bangun = dailySleepData.bangun;
                     updateUI();
                 }
             });
 
-            // Sync Tabel Rekapan Daily
+            // Sync Tabel Rekapan Daily Semua Sesi Matkul
             const colRef = window.collection(window.db, "catatan_harian");
             window.onSnapshot(colRef, (snapshot) => {
                 const tbody = document.getElementById('rekapanTableBody');
                 tbody.innerHTML = '';
 
                 if (snapshot.empty) {
-                    tbody.innerHTML = '<tr><td colspan="5" class="text-center p-3 text-slate-500">Belum ada rekapan harian.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-center p-3 text-slate-500">Belum ada rekapan harian.</td></tr>';
                     return;
                 }
 
@@ -264,7 +276,6 @@
                     docs.push({ id: doc.id, ...doc.data() });
                 });
 
-                // Urutkan tanggal terbaru di paling atas
                 docs.sort((a, b) => b.id.localeCompare(a.id));
 
                 docs.forEach(item => {
@@ -284,11 +295,12 @@
                         }
                     }
 
+                    const tglOnly = item.id.split('_')[0];
+
                     row.innerHTML = `
-                        <td class="p-2 font-mono text-[11px]">${item.id}</td>
-                        <td class="p-2 font-medium text-white">${item.matkul || '-'}</td>
-                        <td class="p-2 text-slate-400">${item.tidur || '-'} / ${item.bangun || '-'}</td>
-                        <td class="p-2 font-bold text-indigo-300">${item.masuk || '-'}</td>
+                        <td class="p-2 font-mono text-[11px]">${tglOnly}</td>
+                        <td class="p-2 font-medium text-white">${item.matkul || 'Matkul'}</td>
+                        <td class="p-2 text-slate-400">${item.berangkat || '-'} -> <span class="text-indigo-300 font-bold">${item.masuk || '-'}</span></td>
                         <td class="p-2">${statusBadge}</td>
                     `;
                     tbody.appendChild(row);
@@ -298,24 +310,42 @@
 
         async function saveToFirestore() {
             if (!window.db) return;
-            const docRef = window.doc(window.db, "catatan_harian", todayKey);
+            activeSesiKey = generateSesiKey();
+            const docRef = window.doc(window.db, "catatan_harian", activeSesiKey);
             await window.setDoc(docRef, todayData, { merge: true });
+
+            // Simpan juga jam tidur & bangun ke koleksi harian
+            if (todayData.tidur || todayData.bangun) {
+                const sleepRef = window.doc(window.db, "tidur_harian", todayDate);
+                await window.setDoc(sleepRef, { tidur: todayData.tidur, bangun: todayData.bangun }, { merge: true });
+            }
         }
 
         function recordTime(type) {
             const now = new Date();
             const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).replace(/\./g, ':');
+            
             todayData[type] = timeStr;
-            todayData.matkul = document.getElementById('matkulInput').value;
+            todayData.matkul = document.getElementById('matkulInput').value.trim() || 'Matkul Sesi Ini';
+            
             saveToFirestore();
             updateUI();
         }
 
         function saveTarget() {
             todayData.target = document.getElementById('targetInput').value;
-            todayData.matkul = document.getElementById('matkulInput').value;
+            todayData.matkul = document.getElementById('matkulInput').value.trim() || 'Matkul Sesi Ini';
             saveToFirestore();
             updateUI();
+        }
+
+        function resetSesiBaru() {
+            document.getElementById('matkulInput').value = '';
+            todayData.berangkat = null;
+            todayData.masuk = null;
+            todayData.matkul = '';
+            updateUI();
+            alert('Siap mengisi Sesi Matkul Baru! Silakan isi nama mata kuliah dan target jam masuk.');
         }
 
         function updateUI() {
@@ -324,9 +354,6 @@
             document.getElementById('val-berangkat').innerText = todayData.berangkat ? `${todayData.berangkat} WIB` : 'Belum dicatat';
             document.getElementById('val-masuk').innerText = todayData.masuk ? `${todayData.masuk} WIB` : 'Belum dicatat';
             document.getElementById('targetDisplay').innerText = `${todayData.target || '07:00'} WIB`;
-            if (todayData.matkul && !document.getElementById('matkulInput').value) {
-                document.getElementById('matkulInput').value = todayData.matkul;
-            }
 
             calculateEvaluations();
         }
@@ -336,7 +363,6 @@
             const masukMins = parseToMinutes(todayData.masuk);
             const targetMins = parseToMinutes(todayData.target || "07:00");
 
-            // Evaluasi Keterlambatan
             if (masukMins !== null && targetMins !== null) {
                 const diff = masukMins - targetMins;
                 if (diff <= 0) {
@@ -351,18 +377,16 @@
                 evalBadge.innerText = "Lengkapi catatan waktu untuk melihat evaluasi";
             }
 
-            // Durasi Tidur
             const tidurMins = parseToMinutes(todayData.tidur);
             const bangunMins = parseToMinutes(todayData.bangun);
             if (tidurMins !== null && bangunMins !== null) {
                 let dur = bangunMins - tidurMins;
-                if (dur < 0) dur += 24 * 60; // Lintas malam
+                if (dur < 0) dur += 24 * 60;
                 document.getElementById('durasiTidur').innerText = `${Math.floor(dur / 60)} jam ${dur % 60} menit`;
             } else {
                 document.getElementById('durasiTidur').innerText = "-";
             }
 
-            // Durasi Perjalanan
             const berangkatMins = parseToMinutes(todayData.berangkat);
             if (berangkatMins !== null && masukMins !== null) {
                 let dur = masukMins - berangkatMins;
