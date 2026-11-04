@@ -45,7 +45,7 @@
                 </div>
                 <div>
                     <h1 class="font-bold text-lg leading-tight text-white">Manage Waktumu</h1>
-                    <p class="text-xs text-indigo-400 font-medium">Atasi Keterlambatanku (Evaluasi Perjalanan)</p>
+                    <p class="text-xs text-indigo-400 font-medium">Atasi Keterlambatanku (Sistem Penilaian Kedisiplinan)</p>
                 </div>
             </div>
             <span id="syncStatus" class="px-2.5 py-1 text-xs rounded-full bg-emerald-500/20 text-emerald-400 font-medium flex items-center gap-1.5">
@@ -231,11 +231,23 @@
             </div>
         </section>
 
-        <!-- Evaluation Card -->
-        <section class="bg-slate-800/80 p-5 rounded-2xl border border-slate-700 space-y-3">
+        <!-- Evaluation Card & Nilai Kedisiplinan -->
+        <section class="bg-slate-800/80 p-5 rounded-2xl border border-slate-700 space-y-4">
             <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-                <i class="fa-solid fa-chart-line text-indigo-400"></i> Evaluasi Otomatis Sesi Ini
+                <i class="fa-solid fa-chart-line text-indigo-400"></i> Evaluasi &amp; Nilai Kedisiplinan Sesi Ini
             </h2>
+
+            <!-- Box Nilai Kedisiplinan (0-100) -->
+            <div class="bg-slate-900 p-4 rounded-xl border border-slate-700 flex items-center justify-between">
+                <div>
+                    <span class="text-xs text-slate-400 block font-medium">Skor Kedisiplinan Kehadiran (Y1):</span>
+                    <div id="skorValueDisplay" class="text-3xl font-black text-indigo-400 mt-1">- / 100</div>
+                </div>
+                <div id="predikatBadgeDisplay" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-slate-400 border border-slate-700">
+                    Belum Dinilai
+                </div>
+            </div>
+
             <div id="evalBadge" class="p-3 rounded-xl bg-slate-900 border border-slate-700 text-center font-bold text-slate-400 text-sm">
                 Lengkapi catatan waktu untuk melihat evaluasi
             </div>
@@ -251,26 +263,25 @@
             </div>
         </section>
 
-        <!-- Rekapan Daily -->
+        <!-- Rekapan Daily Dengan Nilai Skor -->
         <section class="bg-slate-800/80 p-5 rounded-2xl border border-slate-700 space-y-4">
             <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-                <i class="fa-solid fa-list-check text-emerald-400"></i> Rekapan Harian & Evaluasi Perjalanan
+                <i class="fa-solid fa-list-check text-emerald-400"></i> Rekapan Harian &amp; Penilaian Kedisiplinan
             </h2>
             <div class="overflow-x-auto">
                 <table class="w-full text-xs text-left text-slate-300">
                     <thead class="bg-slate-900/80 text-slate-400 uppercase font-semibold border-b border-slate-700">
                         <tr>
-                            <th class="p-2">Tanggal</th>
-                            <th class="p-2">Mata Kuliah</th>
-                            <th class="p-2">Bukti Berangkat</th>
-                            <th class="p-2">Kendala Jalan</th>
-                            <th class="p-2">Bukti Kelas</th>
+                            <th class="p-2">Tgl</th>
+                            <th class="p-2">Matkul</th>
+                            <th class="p-2">Bukti Visual</th>
                             <th class="p-2">Status</th>
+                            <th class="p-2 text-center">Skor Nilai</th>
                         </tr>
                     </thead>
                     <tbody id="rekapanTableBody" class="divide-y divide-slate-700/50">
                         <tr>
-                            <td colspan="6" class="text-center p-3 text-slate-500">Memuat riwayat harian...</td>
+                            <td colspan="5" class="text-center p-3 text-slate-500">Memuat riwayat harian...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -296,6 +307,7 @@
             obsRumah: "Orang tua",
             obsKampus: "Ficky Ferdinand Abalain",
             matkul: "", tidur: null, bangun: null, berangkat: null, masuk: null, target: "07:00", 
+            skorKedisiplinan: null, predikat: null,
             mediaBerangkat: null, mediaJalan: null, mediaKelas: null 
         };
 
@@ -441,14 +453,14 @@
                 }
             });
 
-            // SYNC REKAPAN DAILY
+            // SYNC REKAPAN DAILY DENGAN PENILAIAN SKOR
             const colRef = window.collection(window.db, "catatan_harian");
             window.onSnapshot(colRef, (snapshot) => {
                 const tbody = document.getElementById('rekapanTableBody');
                 tbody.innerHTML = '';
 
                 if (snapshot.empty) {
-                    tbody.innerHTML = '<tr><td colspan="6" class="text-center p-3 text-slate-500">Belum ada rekapan harian.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center p-3 text-slate-500">Belum ada rekapan harian.</td></tr>';
                     return;
                 }
 
@@ -466,27 +478,43 @@
                     const masukMins = parseToMinutes(item.masuk);
                     const targetMins = parseToMinutes(item.target || "07:00");
                     let statusBadge = `<span class="text-slate-500">-</span>`;
+                    let skorBadge = `<span class="text-slate-500">-</span>`;
 
                     if (masukMins !== null && targetMins !== null) {
                         const diff = masukMins - targetMins;
                         if (diff <= 0) {
                             statusBadge = `<span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold text-[10px]">Tepat Waktu</span>`;
+                            skorBadge = `<span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-black text-xs">100 (A)</span>`;
+                        } else if (diff <= 5) {
+                            statusBadge = `<span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 font-bold text-[10px]">+${diff}m Terlambat</span>`;
+                            skorBadge = `<span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-black text-xs">85 (B)</span>`;
+                        } else if (diff <= 15) {
+                            statusBadge = `<span class="px-2 py-0.5 rounded bg-orange-500/20 text-orange-400 font-bold text-[10px]">+${diff}m Terlambat</span>`;
+                            skorBadge = `<span class="px-2 py-0.5 rounded bg-orange-500/20 text-orange-300 font-black text-xs">70 (C)</span>`;
                         } else {
                             statusBadge = `<span class="px-2 py-0.5 rounded bg-rose-500/20 text-rose-400 font-bold text-[10px]">+${diff}m Terlambat</span>`;
+                            skorBadge = `<span class="px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 font-black text-xs">50 (D)</span>`;
                         }
                     }
 
-                    const makeThumb = (src) => src ? `<img src="${src}" class="w-8 h-8 rounded-lg object-cover border border-slate-600 cursor-pointer hover:opacity-80" onclick="openPhotoModal('${src}')"/>` : `<span class="text-slate-600 text-[10px]">-</span>`;
+                    const makeThumb = (src, title) => src ? `<img src="${src}" class="w-7 h-7 rounded-lg object-cover border border-slate-600 cursor-pointer inline-block" onclick="openPhotoModal('${src}')" title="${title}"/>` : '';
 
                     const tglOnly = item.id.split('_')[0];
+                    const visualThumbs = `
+                        <div class="flex items-center gap-1">
+                            ${makeThumb(item.mediaBerangkat, 'Foto Berangkat')}
+                            ${makeThumb(item.mediaJalan, 'Kendala Jalan')}
+                            ${makeThumb(item.mediaKelas, 'Foto Tiba Kelas')}
+                            ${(!item.mediaBerangkat && !item.mediaJalan && !item.mediaKelas) ? '<span class="text-slate-600 text-[10px]">-</span>' : ''}
+                        </div>
+                    `;
 
                     row.innerHTML = `
                         <td class="p-2 font-mono text-[11px]">${tglOnly}</td>
                         <td class="p-2 font-medium text-white">${item.matkul || 'Matkul'}</td>
-                        <td class="p-2">${makeThumb(item.mediaBerangkat)}</td>
-                        <td class="p-2">${makeThumb(item.mediaJalan)}</td>
-                        <td class="p-2">${makeThumb(item.mediaKelas)}</td>
+                        <td class="p-2">${visualThumbs}</td>
                         <td class="p-2">${statusBadge}</td>
+                        <td class="p-2 text-center">${skorBadge}</td>
                     `;
                     tbody.appendChild(row);
                 });
@@ -551,6 +579,8 @@
             todayData.berangkat = null;
             todayData.masuk = null;
             todayData.matkul = '';
+            todayData.skorKedisiplinan = null;
+            todayData.predikat = null;
             todayData.mediaBerangkat = null;
             todayData.mediaJalan = null;
             todayData.mediaKelas = null;
@@ -571,6 +601,9 @@
 
         function calculateEvaluations() {
             const evalBadge = document.getElementById('evalBadge');
+            const skorDisplay = document.getElementById('skorValueDisplay');
+            const predikatBadge = document.getElementById('predikatBadgeDisplay');
+
             const masukMins = parseToMinutes(todayData.masuk);
             const targetMins = parseToMinutes(todayData.target || "07:00");
 
@@ -579,13 +612,51 @@
                 if (diff <= 0) {
                     evalBadge.className = "p-3 rounded-xl bg-emerald-900/50 border border-emerald-500/50 text-center font-bold text-emerald-400 text-sm";
                     evalBadge.innerText = `🎉 Kamu tepat waktu, keren sekali! (${Math.abs(diff)} menit lebih awal)`;
+                    
+                    todayData.skorKedisiplinan = 100;
+                    todayData.predikat = "A (Sangat Baik)";
+                    skorDisplay.innerText = "100 / 100";
+                    skorDisplay.className = "text-3xl font-black text-emerald-400 mt-1";
+                    predikatBadge.innerText = "Predikat A (Sangat Baik)";
+                    predikatBadge.className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40";
+                } else if (diff <= 5) {
+                    evalBadge.className = "p-3 rounded-xl bg-amber-900/50 border border-amber-500/50 text-center font-bold text-amber-400 text-sm";
+                    evalBadge.innerText = `⚠️ Kamu Terlambat ringan ke kelas (+${diff} menit)`;
+                    
+                    todayData.skorKedisiplinan = 85;
+                    todayData.predikat = "B (Baik)";
+                    skorDisplay.innerText = "85 / 100";
+                    skorDisplay.className = "text-3xl font-black text-amber-400 mt-1";
+                    predikatBadge.innerText = "Predikat B (Baik)";
+                    predikatBadge.className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500/40";
+                } else if (diff <= 15) {
+                    evalBadge.className = "p-3 rounded-xl bg-orange-900/50 border border-orange-500/50 text-center font-bold text-orange-400 text-sm";
+                    evalBadge.innerText = `⚠️ Kamu Terlambat sedang (+${diff} menit), perbaiki manajemen waktumu!`;
+                    
+                    todayData.skorKedisiplinan = 70;
+                    todayData.predikat = "C (Cukup)";
+                    skorDisplay.innerText = "70 / 100";
+                    skorDisplay.className = "text-3xl font-black text-orange-400 mt-1";
+                    predikatBadge.innerText = "Predikat C (Cukup)";
+                    predikatBadge.className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-orange-500/20 text-orange-400 border border-orange-500/40";
                 } else {
                     evalBadge.className = "p-3 rounded-xl bg-rose-900/50 border border-rose-500/50 text-center font-bold text-rose-400 text-sm";
-                    evalBadge.innerText = `⚠️ Kamu Terlambat ke kelas, perbaiki manajemen waktumu! (+${diff} menit)`;
+                    evalBadge.innerText = `⚠️ Kamu Terlambat berat (+${diff} menit), evaluasi total waktu persiapanmu!`;
+                    
+                    todayData.skorKedisiplinan = 50;
+                    todayData.predikat = "D (Perlu Evaluasi)";
+                    skorDisplay.innerText = "50 / 100";
+                    skorDisplay.className = "text-3xl font-black text-rose-400 mt-1";
+                    predikatBadge.innerText = "Predikat D (Perlu Evaluasi)";
+                    predikatBadge.className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-rose-500/20 text-rose-400 border border-rose-500/40";
                 }
             } else {
                 evalBadge.className = "p-3 rounded-xl bg-slate-900 border border-slate-700 text-center font-bold text-slate-400 text-sm";
                 evalBadge.innerText = "Lengkapi catatan waktu untuk melihat evaluasi";
+                skorDisplay.innerText = "- / 100";
+                skorDisplay.className = "text-3xl font-black text-slate-400 mt-1";
+                predikatBadge.innerText = "Belum Dinilai";
+                predikatBadge.className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-slate-400 border border-slate-700";
             }
 
             const tidurMins = parseToMinutes(todayData.tidur);
