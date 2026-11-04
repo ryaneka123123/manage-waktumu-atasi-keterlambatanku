@@ -45,7 +45,7 @@
                 </div>
                 <div>
                     <h1 class="font-bold text-lg leading-tight text-white">Manage Waktumu</h1>
-                    <p class="text-xs text-indigo-400 font-medium">Atasi Keterlambatanku (Foto Rekapan Daily)</p>
+                    <p class="text-xs text-indigo-400 font-medium">Atasi Keterlambatanku (Evaluasi Perjalanan)</p>
                 </div>
             </div>
             <span id="syncStatus" class="px-2.5 py-1 text-xs rounded-full bg-emerald-500/20 text-emerald-400 font-medium flex items-center gap-1.5">
@@ -86,16 +86,31 @@
             </div>
         </section>
 
-        <!-- Timeline Media Preview Card (Foto Real-Time) -->
-        <section class="bg-slate-800/80 p-4 rounded-2xl border border-slate-700 space-y-3">
+        <!-- Upload Bukti Real-Time (Berangkat, Jalan, & Kelas) -->
+        <section class="bg-slate-800/80 p-4 rounded-2xl border border-slate-700 space-y-4">
             <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-                <i class="fa-solid fa-camera text-indigo-400"></i> Ambil/Unggah Foto Real-Time Harian
+                <i class="fa-solid fa-camera text-indigo-400"></i> Bukti Visual Real-Time
             </h2>
-            <div class="space-y-2">
-                <input type="file" id="mediaInput" accept="image/*" capture="environment" class="w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer">
-                <div id="mediaPreviewContainer" class="hidden rounded-xl overflow-hidden border border-slate-700 max-h-48 bg-slate-900 flex justify-center items-center p-2">
-                    <!-- Preview Foto -->
-                </div>
+            
+            <!-- 1. Foto Berangkat -->
+            <div class="space-y-1">
+                <label class="text-xs text-slate-300 font-medium block">Foto/Video Berangkat Kampus:</label>
+                <input type="file" id="mediaBerangkatInput" accept="image/*,video/*" capture="environment" class="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-500 cursor-pointer">
+                <div id="previewBerangkat" class="hidden mt-2 rounded-lg overflow-hidden border border-slate-700 max-h-36 bg-slate-900 flex justify-center items-center"></div>
+            </div>
+
+            <!-- 2. Foto Kendala Jalan (Opsional jika telat) -->
+            <div class="space-y-1 pt-2 border-t border-slate-700/50">
+                <label class="text-xs text-amber-300 font-medium block">Foto/Video Kondisi Jalan (Jalan Macet / Kendala):</label>
+                <input type="file" id="mediaJalanInput" accept="image/*,video/*" capture="environment" class="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-600 file:text-white hover:file:bg-amber-500 cursor-pointer">
+                <div id="previewJalan" class="hidden mt-2 rounded-lg overflow-hidden border border-slate-700 max-h-36 bg-slate-900 flex justify-center items-center"></div>
+            </div>
+
+            <!-- 3. Foto Tiba di Kelas -->
+            <div class="space-y-1 pt-2 border-t border-slate-700/50">
+                <label class="text-xs text-emerald-300 font-medium block">Foto/Video Sampai Kelas:</label>
+                <input type="file" id="mediaKelasInput" accept="image/*,video/*" capture="environment" class="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-600 file:text-white hover:file:bg-emerald-500 cursor-pointer">
+                <div id="previewKelas" class="hidden mt-2 rounded-lg overflow-hidden border border-slate-700 max-h-36 bg-slate-900 flex justify-center items-center"></div>
             </div>
         </section>
 
@@ -122,7 +137,7 @@
             </h2>
 
             <div class="bg-indigo-950/40 p-3 rounded-xl border border-indigo-800/50 text-xs text-indigo-300 flex justify-between items-center">
-                <span><i class="fa-solid fa-info-circle mr-1"></i> Jam Tidur/Bangun otomatis mengikuti catatan pertama hari ini.</span>
+                <span><i class="fa-solid fa-info-circle mr-1"></i> Jam Tidur/Bangun mengikuti catatan pertama hari ini.</span>
                 <button onclick="resetSesiBaru()" class="bg-indigo-800 hover:bg-indigo-700 text-white px-2.5 py-1 rounded text-[11px] font-medium">
                     + Sesi Matkul Baru
                 </button>
@@ -216,7 +231,7 @@
         <!-- Rekapan Daily -->
         <section class="bg-slate-800/80 p-5 rounded-2xl border border-slate-700 space-y-4">
             <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-                <i class="fa-solid fa-list-check text-emerald-400"></i> Rekapan Harian & Foto Real-Time
+                <i class="fa-solid fa-list-check text-emerald-400"></i> Rekapan Harian & Evaluasi Perjalanan
             </h2>
             <div class="overflow-x-auto">
                 <table class="w-full text-xs text-left text-slate-300">
@@ -224,14 +239,15 @@
                         <tr>
                             <th class="p-2">Tanggal</th>
                             <th class="p-2">Mata Kuliah</th>
-                            <th class="p-2">Masuk Kelas</th>
-                            <th class="p-2">Foto Bukti</th>
+                            <th class="p-2">Bukti Berangkat</th>
+                            <th class="p-2">Kendala Jalan</th>
+                            <th class="p-2">Bukti Kelas</th>
                             <th class="p-2">Status</th>
                         </tr>
                     </thead>
                     <tbody id="rekapanTableBody" class="divide-y divide-slate-700/50">
                         <tr>
-                            <td colspan="5" class="text-center p-3 text-slate-500">Memuat riwayat harian...</td>
+                            <td colspan="6" class="text-center p-3 text-slate-500">Memuat riwayat harian...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -252,7 +268,7 @@
         let todayDate = new Date().toISOString().split('T')[0];
         let dailySleepData = { tidur: null, bangun: null };
         let activeSesiKey = null;
-        let todayData = { matkul: "", tidur: null, bangun: null, berangkat: null, masuk: null, target: "07:00", mediaData: null };
+        let todayData = { matkul: "", tidur: null, bangun: null, berangkat: null, masuk: null, target: "07:00", mediaBerangkat: null, mediaJalan: null, mediaKelas: null };
 
         // FUNGSI NADA DERING (Web Audio API)
         function playAudioFeedback(type) {
@@ -299,36 +315,42 @@
             playAudioFeedback('success');
         }
 
-        // KOMPRESI DAN READ FOTO
-        document.getElementById('mediaInput').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
+        // FUNGSIONALITAS KOMPRESI & UPLOAD FOTO MULTI-INPUT
+        function handleFileInput(elementId, dataField, previewContainerId) {
+            document.getElementById(elementId).addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
 
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                const img = new Image();
-                img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 400;
-                    const scaleSize = MAX_WIDTH / img.width;
-                    canvas.width = MAX_WIDTH;
-                    canvas.height = img.height * scaleSize;
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 400;
+                        const scaleSize = MAX_WIDTH / img.width;
+                        canvas.width = MAX_WIDTH;
+                        canvas.height = img.height * scaleSize;
 
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    
-                    todayData.mediaData = canvas.toDataURL('image/jpeg', 0.6);
-                    renderMediaPreview(todayData.mediaData);
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        
+                        todayData[dataField] = canvas.toDataURL('image/jpeg', 0.6);
+                        renderMediaPreview(todayData[dataField], previewContainerId);
+                    };
+                    img.src = evt.target.result;
                 };
-                img.src = evt.target.result;
-            };
-            reader.readAsDataURL(file);
-        });
+                reader.readAsDataURL(file);
+            });
+        }
 
-        function renderMediaPreview(src) {
-            const container = document.getElementById('mediaPreviewContainer');
+        handleFileInput('mediaBerangkatInput', 'mediaBerangkat', 'previewBerangkat');
+        handleFileInput('mediaJalanInput', 'mediaJalan', 'previewJalan');
+        handleFileInput('mediaKelasInput', 'mediaKelas', 'previewKelas');
+
+        function renderMediaPreview(src, containerId) {
+            const container = document.getElementById(containerId);
             container.classList.remove('hidden');
-            container.innerHTML = `<img src="${src}" class="max-h-44 rounded-lg object-cover cursor-pointer" onclick="openPhotoModal('${src}')"/>`;
+            container.innerHTML = `<img src="${src}" class="max-h-32 rounded-lg object-cover cursor-pointer" onclick="openPhotoModal('${src}')"/>`;
         }
 
         function openPhotoModal(src) {
@@ -383,14 +405,14 @@
                 }
             });
 
-            // SINKRONISASI TABEL REKAPAN DAILY
+            // SYNC REKAPAN DAILY
             const colRef = window.collection(window.db, "catatan_harian");
             window.onSnapshot(colRef, (snapshot) => {
                 const tbody = document.getElementById('rekapanTableBody');
                 tbody.innerHTML = '';
 
                 if (snapshot.empty) {
-                    tbody.innerHTML = '<tr><td colspan="5" class="text-center p-3 text-slate-500">Belum ada rekapan harian.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center p-3 text-slate-500">Belum ada rekapan harian.</td></tr>';
                     return;
                 }
 
@@ -418,19 +440,16 @@
                         }
                     }
 
-                    // FOTO TAMPIL DI TABEL REKAPAN
-                    let photoTag = `<span class="text-slate-500 text-[10px]">-</span>`;
-                    if (item.mediaData) {
-                        photoTag = `<img src="${item.mediaData}" class="w-9 h-9 rounded-lg object-cover border border-slate-600 cursor-pointer hover:opacity-80 transition" onclick="openPhotoModal('${item.mediaData}')" title="Klik untuk memperbesar foto"/>`;
-                    }
+                    const makeThumb = (src) => src ? `<img src="${src}" class="w-8 h-8 rounded-lg object-cover border border-slate-600 cursor-pointer hover:opacity-80" onclick="openPhotoModal('${src}')"/>` : `<span class="text-slate-600 text-[10px]">-</span>`;
 
                     const tglOnly = item.id.split('_')[0];
 
                     row.innerHTML = `
                         <td class="p-2 font-mono text-[11px]">${tglOnly}</td>
                         <td class="p-2 font-medium text-white">${item.matkul || 'Matkul'}</td>
-                        <td class="p-2 font-bold text-indigo-300">${item.masuk || '-'}</td>
-                        <td class="p-2">${photoTag}</td>
+                        <td class="p-2">${makeThumb(item.mediaBerangkat)}</td>
+                        <td class="p-2">${makeThumb(item.mediaJalan)}</td>
+                        <td class="p-2">${makeThumb(item.mediaKelas)}</td>
                         <td class="p-2">${statusBadge}</td>
                     `;
                     tbody.appendChild(row);
@@ -487,12 +506,18 @@
 
         function resetSesiBaru() {
             document.getElementById('matkulInput').value = '';
-            document.getElementById('mediaInput').value = '';
-            document.getElementById('mediaPreviewContainer').classList.add('hidden');
+            document.getElementById('mediaBerangkatInput').value = '';
+            document.getElementById('mediaJalanInput').value = '';
+            document.getElementById('mediaKelasInput').value = '';
+            document.getElementById('previewBerangkat').classList.add('hidden');
+            document.getElementById('previewJalan').classList.add('hidden');
+            document.getElementById('previewKelas').classList.add('hidden');
             todayData.berangkat = null;
             todayData.masuk = null;
             todayData.matkul = '';
-            todayData.mediaData = null;
+            todayData.mediaBerangkat = null;
+            todayData.mediaJalan = null;
+            todayData.mediaKelas = null;
             playAudioFeedback('click');
             updateUI();
             alert('Siap mengisi Sesi Matkul Baru!');
