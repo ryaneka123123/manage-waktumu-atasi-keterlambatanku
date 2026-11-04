@@ -56,6 +56,29 @@
 
     <main class="max-w-xl mx-auto p-4 space-y-6">
 
+        <!-- Info Identitas Subjek & Observer -->
+        <section class="bg-slate-800/90 p-4 rounded-2xl border border-indigo-500/30 space-y-3">
+            <h2 class="text-xs font-bold uppercase tracking-wider text-indigo-400 flex items-center gap-2">
+                <i class="fa-solid fa-user-check"></i> Catatan Identitas Penelitian
+            </h2>
+            <div class="grid grid-cols-1 gap-2 text-xs">
+                <div class="bg-slate-900/80 p-2.5 rounded-xl border border-slate-700/60">
+                    <span class="text-slate-400 block font-medium">Subjek Penelitian:</span>
+                    <input type="text" id="subjekInput" value="Ryan Eka Saputra" onchange="saveIdentitas()" class="bg-transparent font-semibold text-indigo-300 w-full focus:outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="bg-slate-900/80 p-2.5 rounded-xl border border-slate-700/60">
+                        <span class="text-slate-400 block font-medium">Observer (Rumah):</span>
+                        <input type="text" id="obsRumahInput" value="Orang tua" onchange="saveIdentitas()" class="bg-transparent font-semibold text-white w-full focus:outline-none">
+                    </div>
+                    <div class="bg-slate-900/80 p-2.5 rounded-xl border border-slate-700/60">
+                        <span class="text-slate-400 block font-medium">Observer (Kampus):</span>
+                        <input type="text" id="obsKampusInput" value="Ficky Ferdinand Abalain" onchange="saveIdentitas()" class="bg-transparent font-semibold text-white w-full focus:outline-none">
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- Live Clock & Target Card -->
         <section class="bg-gradient-to-br from-slate-800 to-indigo-950 p-6 rounded-2xl border border-indigo-500/30 shadow-xl text-center space-y-4">
             <span class="text-xs uppercase tracking-wider font-semibold text-indigo-400 bg-indigo-950/80 px-3 py-1 rounded-full border border-indigo-800">
@@ -86,7 +109,7 @@
             </div>
         </section>
 
-        <!-- Upload Bukti Real-Time (Berangkat, Jalan, & Kelas) -->
+        <!-- Upload Bukti Real-Time -->
         <section class="bg-slate-800/80 p-4 rounded-2xl border border-slate-700 space-y-4">
             <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-2">
                 <i class="fa-solid fa-camera text-indigo-400"></i> Bukti Visual Real-Time
@@ -99,7 +122,7 @@
                 <div id="previewBerangkat" class="hidden mt-2 rounded-lg overflow-hidden border border-slate-700 max-h-36 bg-slate-900 flex justify-center items-center"></div>
             </div>
 
-            <!-- 2. Foto Kendala Jalan (Opsional jika telat) -->
+            <!-- 2. Foto Kendala Jalan -->
             <div class="space-y-1 pt-2 border-t border-slate-700/50">
                 <label class="text-xs text-amber-300 font-medium block">Foto/Video Kondisi Jalan (Jalan Macet / Kendala):</label>
                 <input type="file" id="mediaJalanInput" accept="image/*,video/*" capture="environment" class="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-600 file:text-white hover:file:bg-amber-500 cursor-pointer">
@@ -268,7 +291,13 @@
         let todayDate = new Date().toISOString().split('T')[0];
         let dailySleepData = { tidur: null, bangun: null };
         let activeSesiKey = null;
-        let todayData = { matkul: "", tidur: null, bangun: null, berangkat: null, masuk: null, target: "07:00", mediaBerangkat: null, mediaJalan: null, mediaKelas: null };
+        let todayData = { 
+            subjek: "Ryan Eka Saputra",
+            obsRumah: "Orang tua",
+            obsKampus: "Ficky Ferdinand Abalain",
+            matkul: "", tidur: null, bangun: null, berangkat: null, masuk: null, target: "07:00", 
+            mediaBerangkat: null, mediaJalan: null, mediaKelas: null 
+        };
 
         // FUNGSI NADA DERING (Web Audio API)
         function playAudioFeedback(type) {
@@ -315,7 +344,14 @@
             playAudioFeedback('success');
         }
 
-        // FUNGSIONALITAS KOMPRESI & UPLOAD FOTO MULTI-INPUT
+        function saveIdentitas() {
+            todayData.subjek = document.getElementById('subjekInput').value;
+            todayData.obsRumah = document.getElementById('obsRumahInput').value;
+            todayData.obsKampus = document.getElementById('obsKampusInput').value;
+            saveToFirestore();
+        }
+
+        // KOMPRESI & UPLOAD FOTO MULTI-INPUT
         function handleFileInput(elementId, dataField, previewContainerId) {
             document.getElementById(elementId).addEventListener('change', function(e) {
                 const file = e.target.files[0];
