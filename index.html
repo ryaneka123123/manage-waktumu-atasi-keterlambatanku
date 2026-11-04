@@ -45,7 +45,7 @@
                 </div>
                 <div>
                     <h1 class="font-bold text-lg leading-tight text-white">Manage Waktumu</h1>
-                    <p class="text-xs text-indigo-400 font-medium">Atasi Keterlambatanku (Audio & Media Active)</p>
+                    <p class="text-xs text-indigo-400 font-medium">Atasi Keterlambatanku (Foto Rekapan Daily)</p>
                 </div>
             </div>
             <span id="syncStatus" class="px-2.5 py-1 text-xs rounded-full bg-emerald-500/20 text-emerald-400 font-medium flex items-center gap-1.5">
@@ -69,7 +69,7 @@
             <!-- Input Mata Kuliah -->
             <div class="pt-3 border-t border-slate-700/60 space-y-3 bg-slate-900/50 p-3 rounded-xl border border-slate-800 text-left">
                 <div>
-                    <label class="text-xs text-indigo-300 font-semibold block mb-1">Mata Kuliah / Kelas:</label>
+                    <label class="text-xs text-indigo-300 font-semibold block mb-1">Mata Kuliah / Kelas Hari Ini:</label>
                     <input type="text" id="matkulInput" placeholder="Contoh: Algoritma & Pemrograman" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 font-medium">
                 </div>
                 
@@ -86,15 +86,15 @@
             </div>
         </section>
 
-        <!-- Timeline Media Preview Card (Foto / Video Real-Time) -->
+        <!-- Timeline Media Preview Card (Foto Real-Time) -->
         <section class="bg-slate-800/80 p-4 rounded-2xl border border-slate-700 space-y-3">
             <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-                <i class="fa-solid fa-camera text-indigo-400"></i> Bukti Timeline Real (Foto / Video Singkat)
+                <i class="fa-solid fa-camera text-indigo-400"></i> Ambil/Unggah Foto Real-Time Harian
             </h2>
             <div class="space-y-2">
-                <input type="file" id="mediaInput" accept="image/*,video/*" capture="environment" class="w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer">
-                <div id="mediaPreviewContainer" class="hidden rounded-xl overflow-hidden border border-slate-700 max-h-48 bg-slate-900 flex justify-center items-center">
-                    <!-- Preview Foto/Video -->
+                <input type="file" id="mediaInput" accept="image/*" capture="environment" class="w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer">
+                <div id="mediaPreviewContainer" class="hidden rounded-xl overflow-hidden border border-slate-700 max-h-48 bg-slate-900 flex justify-center items-center p-2">
+                    <!-- Preview Foto -->
                 </div>
             </div>
         </section>
@@ -216,7 +216,7 @@
         <!-- Rekapan Daily -->
         <section class="bg-slate-800/80 p-5 rounded-2xl border border-slate-700 space-y-4">
             <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-                <i class="fa-solid fa-list-check text-emerald-400"></i> Rekapan Harian & Timeline Real
+                <i class="fa-solid fa-list-check text-emerald-400"></i> Rekapan Harian & Foto Real-Time
             </h2>
             <div class="overflow-x-auto">
                 <table class="w-full text-xs text-left text-slate-300">
@@ -225,7 +225,7 @@
                             <th class="p-2">Tanggal</th>
                             <th class="p-2">Mata Kuliah</th>
                             <th class="p-2">Masuk Kelas</th>
-                            <th class="p-2">Bukti Timeline</th>
+                            <th class="p-2">Foto Bukti</th>
                             <th class="p-2">Status</th>
                         </tr>
                     </thead>
@@ -240,11 +240,19 @@
 
     </main>
 
+    <!-- Modal Pratinjau Foto Membesar -->
+    <div id="photoModal" class="fixed inset-0 bg-black/80 z-50 hidden flex justify-center items-center p-4 cursor-pointer" onclick="closePhotoModal()">
+        <div class="max-w-md w-full bg-slate-800 p-2 rounded-2xl border border-slate-700">
+            <img id="modalImage" src="" class="w-full h-auto max-h-[80vh] object-contain rounded-xl">
+            <p class="text-center text-xs text-slate-400 mt-2">Klik di mana saja untuk menutup</p>
+        </div>
+    </div>
+
     <script>
         let todayDate = new Date().toISOString().split('T')[0];
         let dailySleepData = { tidur: null, bangun: null };
         let activeSesiKey = null;
-        let todayData = { matkul: "", tidur: null, bangun: null, berangkat: null, masuk: null, target: "07:00", mediaData: null, mediaType: null };
+        let todayData = { matkul: "", tidur: null, bangun: null, berangkat: null, masuk: null, target: "07:00", mediaData: null };
 
         // FUNGSI NADA DERING (Web Audio API)
         function playAudioFeedback(type) {
@@ -283,7 +291,7 @@
                     osc.stop(ctx.currentTime + 0.1);
                 }
             } catch (e) {
-                console.log("Audio play error:", e);
+                console.log("Audio error:", e);
             }
         }
 
@@ -291,28 +299,45 @@
             playAudioFeedback('success');
         }
 
-        // READER FOTO/VIDEO REAL-TIME
+        // KOMPRESI DAN READ FOTO
         document.getElementById('mediaInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
 
             const reader = new FileReader();
             reader.onload = function(evt) {
-                todayData.mediaData = evt.target.result;
-                todayData.mediaType = file.type.startsWith('video') ? 'video' : 'image';
-                renderMediaPreview(todayData.mediaData, todayData.mediaType);
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 400;
+                    const scaleSize = MAX_WIDTH / img.width;
+                    canvas.width = MAX_WIDTH;
+                    canvas.height = img.height * scaleSize;
+
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    
+                    todayData.mediaData = canvas.toDataURL('image/jpeg', 0.6);
+                    renderMediaPreview(todayData.mediaData);
+                };
+                img.src = evt.target.result;
             };
             reader.readAsDataURL(file);
         });
 
-        function renderMediaPreview(src, type) {
+        function renderMediaPreview(src) {
             const container = document.getElementById('mediaPreviewContainer');
             container.classList.remove('hidden');
-            if (type === 'video') {
-                container.innerHTML = `<video src="${src}" controls class="max-h-48 rounded-lg w-full object-cover"></video>`;
-            } else {
-                container.innerHTML = `<img src="${src}" class="max-h-48 rounded-lg w-full object-cover"/>`;
-            }
+            container.innerHTML = `<img src="${src}" class="max-h-44 rounded-lg object-cover cursor-pointer" onclick="openPhotoModal('${src}')"/>`;
+        }
+
+        function openPhotoModal(src) {
+            document.getElementById('modalImage').src = src;
+            document.getElementById('photoModal').classList.remove('hidden');
+        }
+
+        function closePhotoModal() {
+            document.getElementById('photoModal').classList.add('hidden');
         }
 
         function updateClock() {
@@ -358,6 +383,7 @@
                 }
             });
 
+            // SINKRONISASI TABEL REKAPAN DAILY
             const colRef = window.collection(window.db, "catatan_harian");
             window.onSnapshot(colRef, (snapshot) => {
                 const tbody = document.getElementById('rekapanTableBody');
@@ -377,7 +403,7 @@
 
                 docs.forEach(item => {
                     const row = document.createElement('tr');
-                    row.className = "hover:bg-slate-700/30 transition";
+                    row.className = "hover:bg-slate-700/30 transition border-b border-slate-800";
 
                     const masukMins = parseToMinutes(item.masuk);
                     const targetMins = parseToMinutes(item.target || "07:00");
@@ -392,13 +418,10 @@
                         }
                     }
 
-                    let mediaTag = `<span class="text-slate-500 text-[10px]">Tidak ada</span>`;
+                    // FOTO TAMPIL DI TABEL REKAPAN
+                    let photoTag = `<span class="text-slate-500 text-[10px]">-</span>`;
                     if (item.mediaData) {
-                        if (item.mediaType === 'video') {
-                            mediaTag = `<span class="text-amber-400 font-semibold cursor-pointer text-[10px]" onclick="alert('Bukti Video Terlampir')"><i class="fa-solid fa-video mr-1"></i> Video</span>`;
-                        } else {
-                            mediaTag = `<span class="text-indigo-400 font-semibold cursor-pointer text-[10px]" onclick="alert('Bukti Foto Terlampir')"><i class="fa-solid fa-image mr-1"></i> Foto</span>`;
-                        }
+                        photoTag = `<img src="${item.mediaData}" class="w-9 h-9 rounded-lg object-cover border border-slate-600 cursor-pointer hover:opacity-80 transition" onclick="openPhotoModal('${item.mediaData}')" title="Klik untuk memperbesar foto"/>`;
                     }
 
                     const tglOnly = item.id.split('_')[0];
@@ -407,7 +430,7 @@
                         <td class="p-2 font-mono text-[11px]">${tglOnly}</td>
                         <td class="p-2 font-medium text-white">${item.matkul || 'Matkul'}</td>
                         <td class="p-2 font-bold text-indigo-300">${item.masuk || '-'}</td>
-                        <td class="p-2">${mediaTag}</td>
+                        <td class="p-2">${photoTag}</td>
                         <td class="p-2">${statusBadge}</td>
                     `;
                     tbody.appendChild(row);
@@ -470,7 +493,6 @@
             todayData.masuk = null;
             todayData.matkul = '';
             todayData.mediaData = null;
-            todayData.mediaType = null;
             playAudioFeedback('click');
             updateUI();
             alert('Siap mengisi Sesi Matkul Baru!');
