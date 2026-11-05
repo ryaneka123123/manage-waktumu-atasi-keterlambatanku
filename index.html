@@ -46,7 +46,7 @@
                 </div>
                 <div>
                     <h1 class="font-bold text-lg leading-tight text-white">Manage Waktumu</h1>
-                    <p class="text-xs text-indigo-400 font-medium">Sistem Evaluasi Pola Tidur & Kedisiplinan</p>
+                    <p class="text-xs text-indigo-400 font-medium">Sistem Evaluasi Kedisiplinan &amp; Kehadiran Kelas</p>
                 </div>
             </div>
             <span id="syncStatus" class="px-2.5 py-1 text-xs rounded-full bg-emerald-500/20 text-emerald-400 font-medium flex items-center gap-1.5">
@@ -62,7 +62,7 @@
             <h2 class="text-xs font-bold uppercase tracking-wider text-indigo-400 flex items-center gap-2">
                 <i class="fa-solid fa-user-check"></i> Catatan Identitas Penelitian
             </h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs">
                 <div class="bg-slate-900/80 p-2.5 rounded-xl border border-slate-700/60">
                     <span class="text-slate-400 block font-medium">Subjek Penelitian:</span>
                     <input type="text" id="subjekInput" value="Ryan Eka Saputra" onchange="saveIdentitas()" class="bg-transparent font-semibold text-indigo-300 w-full focus:outline-none">
@@ -88,20 +88,32 @@
                 <div id="liveDate" class="text-sm text-slate-400 mt-1 font-medium">Loading tanggal...</div>
             </div>
 
-            <!-- Selector Jadwal Kuliah Otomatis -->
-            <div class="pt-3 border-t border-slate-700/60 space-y-3 bg-slate-900/50 p-3 rounded-xl border border-slate-800 text-left">
-                <div>
-                    <label class="text-xs text-indigo-300 font-semibold block mb-1">
-                        <i class="fa-solid fa-calendar-days mr-1"></i> Pilih Mata Kuliah Hari Ini:
-                    </label>
-                    <select id="matkulSelect" onchange="onMatkulSelectChange()" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 font-medium">
-                        <!-- Options auto-rendered -->
-                    </select>
-                </div>
-                
-                <div class="flex items-center justify-between gap-3 bg-slate-800/80 p-2.5 rounded-lg border border-slate-700/80">
+            <!-- Selector Jadwal Kuliah & Status Kelas -->
+            <div class="pt-3 border-t border-slate-700/60 space-y-3 bg-slate-900/50 p-4 rounded-xl border border-slate-800 text-left">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
-                        <p class="text-[11px] text-slate-400 font-medium">Ruang & Jam Kelas:</p>
+                        <label class="text-xs text-indigo-300 font-semibold block mb-1">
+                            <i class="fa-solid fa-calendar-days mr-1"></i> Pilih Mata Kuliah Hari Ini:
+                        </label>
+                        <select id="matkulSelect" onchange="onMatkulSelectChange()" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 font-medium">
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="text-xs text-amber-300 font-semibold block mb-1">
+                            <i class="fa-solid fa-graduation-cap mr-1"></i> Status Perkuliahan Sesi Ini:
+                        </label>
+                        <select id="statusPerkuliahanSelect" onchange="onStatusPerkuliahanChange()" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500 font-semibold">
+                            <option value="Hadir">✅ Kelas Tatap Muka / Reguler</option>
+                            <option value="Kelas Kosong">🚫 Kelas Kosong / Dibatalkan</option>
+                            <option value="Kelas Pengganti">🔄 Kelas Pengganti / Reschedule</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between gap-3 bg-slate-800/80 p-3 rounded-lg border border-slate-700/80">
+                    <div>
+                        <p class="text-[11px] text-slate-400 font-medium">Ruang &amp; Jam Kelas:</p>
                         <p id="ruangDisplay" class="text-xs font-bold text-amber-300">-</p>
                     </div>
                     <div class="text-right">
@@ -112,15 +124,61 @@
             </div>
         </section>
 
-        <!-- Action Buttons -->
+        <!-- Upload Bukti Real-Time -->
+        <section class="bg-slate-800/80 p-4 rounded-2xl border border-slate-700 space-y-4">
+            <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                <i class="fa-solid fa-camera text-indigo-400"></i> Bukti Visual Real-Time (Auto-Upload Langsung Seketika)
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- 1. Foto Berangkat -->
+                <div class="space-y-1 bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+                    <label class="text-xs text-slate-300 font-medium block">1. Foto Berangkat Kampus:</label>
+                    <input type="file" id="mediaBerangkatInput" accept="image/*,video/*" capture="environment" class="w-full text-xs text-slate-400 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-500 cursor-pointer">
+                    <div id="previewBerangkat" class="hidden mt-2 rounded-lg overflow-hidden border border-slate-700 max-h-32 bg-slate-900 flex justify-center items-center"></div>
+                </div>
+
+                <!-- 2. Foto Kendala Jalan -->
+                <div class="space-y-1 bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+                    <label class="text-xs text-amber-300 font-medium block">2. Kendala Jalan (Macet/Lainnya):</label>
+                    <input type="file" id="mediaJalanInput" accept="image/*,video/*" capture="environment" class="w-full text-xs text-slate-400 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-600 file:text-white hover:file:bg-amber-500 cursor-pointer">
+                    <div id="previewJalan" class="hidden mt-2 rounded-lg overflow-hidden border border-slate-700 max-h-32 bg-slate-900 flex justify-center items-center"></div>
+                </div>
+
+                <!-- 3. Foto Tiba di Kelas -->
+                <div class="space-y-1 bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+                    <label class="text-xs text-emerald-300 font-medium block">3. Foto Sampai di Kelas:</label>
+                    <input type="file" id="mediaKelasInput" accept="image/*,video/*" capture="environment" class="w-full text-xs text-slate-400 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-600 file:text-white hover:file:bg-emerald-500 cursor-pointer">
+                    <div id="previewKelas" class="hidden mt-2 rounded-lg overflow-hidden border border-slate-700 max-h-32 bg-slate-900 flex justify-center items-center"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Control Audio & Tes Nada Dering -->
+        <section class="bg-slate-800/80 p-4 rounded-2xl border border-slate-700 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-amber-500/20 text-amber-400 rounded-xl text-lg">
+                    <i class="fa-solid fa-volume-high"></i>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-xs text-white">Fitur Audio Feedback</h3>
+                    <p class="text-[11px] text-slate-400">Suara nada dering otomatis saat presensi</p>
+                </div>
+            </div>
+            <button onclick="playTestSound()" class="bg-slate-700 hover:bg-slate-600 text-indigo-300 border border-indigo-500/30 text-xs px-3 py-1.5 rounded-lg font-medium transition">
+                <i class="fa-solid fa-play mr-1"></i> Tes Suara
+            </button>
+        </section>
+
+        <!-- Action Buttons Presensi Real-Time -->
         <section class="space-y-3">
             <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-                <i class="fa-solid fa-bolt text-amber-400"></i> Tombol Catat Waktu Real-Time
+                <i class="fa-solid fa-bolt text-amber-400"></i> Tombol Presensi Waktu Real-Time
             </h2>
 
             <div class="bg-indigo-950/40 p-3 rounded-xl border border-indigo-800/50 text-xs text-indigo-300 flex items-center gap-2">
-                <i class="fa-solid fa-circle-info text-indigo-400"></i>
-                <span>Jam Tidur & Bangun otomatis terekam dan ditampilkan di tabel rekapan harian.</span>
+                <i class="fa-solid fa-shield-halved text-indigo-400 text-sm"></i>
+                <span>Jam Tidur &amp; Bangun terkunci otomatis hari ini dan tersimpan untuk seluruh sesi matkul.</span>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -136,7 +194,7 @@
                         </div>
                     </div>
                     <button onclick="recordTime('tidur')" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold px-4 py-2 rounded-lg shadow-md transition">
-                        Catat Sekarang
+                        Catat
                     </button>
                 </div>
 
@@ -152,7 +210,7 @@
                         </div>
                     </div>
                     <button onclick="recordTime('bangun')" class="bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold px-4 py-2 rounded-lg shadow-md transition">
-                        Catat Sekarang
+                        Catat
                     </button>
                 </div>
 
@@ -168,7 +226,7 @@
                         </div>
                     </div>
                     <button onclick="recordTime('berangkat')" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-4 py-2 rounded-lg shadow-md transition">
-                        Catat Sekarang
+                        Catat
                     </button>
                 </div>
 
@@ -184,38 +242,8 @@
                         </div>
                     </div>
                     <button onclick="recordTime('masuk')" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-4 py-2 rounded-lg shadow-md transition">
-                        Catat Sekarang
+                        Catat
                     </button>
-                </div>
-            </div>
-        </section>
-
-        <!-- Upload Bukti Real-Time -->
-        <section class="bg-slate-800/80 p-4 rounded-2xl border border-slate-700 space-y-4">
-            <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-                <i class="fa-solid fa-camera text-indigo-400"></i> Bukti Visual Real-Time
-            </h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <!-- 1. Foto Berangkat -->
-                <div class="space-y-1 bg-slate-900/50 p-3 rounded-xl border border-slate-700/50">
-                    <label class="text-xs text-slate-300 font-medium block">Foto/Video Berangkat:</label>
-                    <input type="file" id="mediaBerangkatInput" accept="image/*,video/*" capture="environment" class="w-full text-xs text-slate-400 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-500 cursor-pointer">
-                    <div id="previewBerangkat" class="hidden mt-2 rounded-lg overflow-hidden border border-slate-700 max-h-32 bg-slate-900 flex justify-center items-center"></div>
-                </div>
-
-                <!-- 2. Foto Kendala Jalan -->
-                <div class="space-y-1 bg-slate-900/50 p-3 rounded-xl border border-slate-700/50">
-                    <label class="text-xs text-amber-300 font-medium block">Foto Kendala Jalan (Macet/Lainnya):</label>
-                    <input type="file" id="mediaJalanInput" accept="image/*,video/*" capture="environment" class="w-full text-xs text-slate-400 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-600 file:text-white hover:file:bg-amber-500 cursor-pointer">
-                    <div id="previewJalan" class="hidden mt-2 rounded-lg overflow-hidden border border-slate-700 max-h-32 bg-slate-900 flex justify-center items-center"></div>
-                </div>
-
-                <!-- 3. Foto Tiba di Kelas -->
-                <div class="space-y-1 bg-slate-900/50 p-3 rounded-xl border border-slate-700/50">
-                    <label class="text-xs text-emerald-300 font-medium block">Foto Sampai Kelas:</label>
-                    <input type="file" id="mediaKelasInput" accept="image/*,video/*" capture="environment" class="w-full text-xs text-slate-400 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-600 file:text-white hover:file:bg-emerald-500 cursor-pointer">
-                    <div id="previewKelas" class="hidden mt-2 rounded-lg overflow-hidden border border-slate-700 max-h-32 bg-slate-900 flex justify-center items-center"></div>
                 </div>
             </div>
         </section>
@@ -223,10 +251,10 @@
         <!-- Evaluation Card & Nilai Kedisiplinan -->
         <section class="bg-slate-800/80 p-5 rounded-2xl border border-slate-700 space-y-4">
             <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-                <i class="fa-solid fa-chart-line text-indigo-400"></i> Evaluasi &amp; Nilai Kedisiplinan Sesi Ini
+                <i class="fa-solid fa-chart-line text-indigo-400"></i> Evaluasi Kedisiplinan Sesi Ini
             </h2>
 
-            <!-- Box Nilai Kedisiplinan -->
+            <!-- Box Nilai Kedisiplinan (0-100) -->
             <div class="bg-slate-900 p-4 rounded-xl border border-slate-700 flex items-center justify-between">
                 <div>
                     <span class="text-xs text-slate-400 block font-medium">Skor Kedisiplinan Kehadiran (Y1):</span>
@@ -246,35 +274,34 @@
                     <p id="durasiTidur" class="text-sm font-bold text-white mt-0.5">-</p>
                 </div>
                 <div class="bg-slate-900 p-3 rounded-xl border border-slate-800">
-                    <p class="text-slate-400">Durasi Perjalanan</p>
+                    <p class="text-slate-400">Durasi Perjalanan Kampus</p>
                     <p id="durasiPerjalanan" class="text-sm font-bold text-white mt-0.5">-</p>
                 </div>
             </div>
         </section>
 
-        <!-- Rekapan Daily Lengkap Tidur, Bangun, & Durasi -->
+        <!-- Rekapan Daily Lengkap (Termasuk Durasi Perjalanan, Pola Tidur, & Fitur Hapus) -->
         <section class="bg-slate-800/80 p-5 rounded-2xl border border-slate-700 space-y-4">
             <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-                <i class="fa-solid fa-list-check text-emerald-400"></i> Rekapan Lengkap Waktu, Tidur, & Evaluasi
+                <i class="fa-solid fa-list-check text-emerald-400"></i> Rekapan Harian &amp; Analytics Lengkap
             </h2>
             <div class="overflow-x-auto">
                 <table class="w-full text-xs text-left text-slate-300">
                     <thead class="bg-slate-900/80 text-slate-400 uppercase font-semibold border-b border-slate-700">
                         <tr>
-                            <th class="p-2">Tgl</th>
-                            <th class="p-2">Matkul</th>
-                            <th class="p-2 text-center">Tidur</th>
-                            <th class="p-2 text-center">Bangun</th>
-                            <th class="p-2 text-center">Durasi Tidur</th>
-                            <th class="p-2 text-center">Bukti Visual</th>
-                            <th class="p-2">Status</th>
-                            <th class="p-2 text-center">Skor</th>
-                            <th class="p-2 text-center">Aksi</th>
+                            <th class="p-2.5">Tgl</th>
+                            <th class="p-2.5">Matkul &amp; Status</th>
+                            <th class="p-2.5 text-center">Tidur / Bangun</th>
+                            <th class="p-2.5 text-center">Durasi Perjalanan</th>
+                            <th class="p-2.5 text-center">Bukti Visual</th>
+                            <th class="p-2.5">Status Presensi</th>
+                            <th class="p-2.5 text-center">Skor Nilai</th>
+                            <th class="p-2.5 text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody id="rekapanTableBody" class="divide-y divide-slate-700/50">
                         <tr>
-                            <td colspan="9" class="text-center p-3 text-slate-500">Memuat riwayat harian...</td>
+                            <td colspan="8" class="text-center p-4 text-slate-500">Memuat riwayat harian...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -314,11 +341,12 @@
             matkul: "", 
             target: "07:00",
             ruang: "",
+            statusPerkuliahan: "Hadir",
             tidur: localStorage.getItem(`tidur_${todayDate}`) || null, 
             bangun: localStorage.getItem(`bangun_${todayDate}`) || null, 
-            durasiTidurText: localStorage.getItem(`durasi_tidur_${todayDate}`) || null,
             berangkat: null, 
             masuk: null, 
+            durasiPerjalanan: null,
             skorKedisiplinan: null, 
             predikat: null,
             mediaBerangkat: null, 
@@ -326,6 +354,7 @@
             mediaKelas: null 
         };
 
+        // RENDER JADWAL KULIAH KE DROPDOWN
         function populateScheduleOptions() {
             const selectEl = document.getElementById('matkulSelect');
             selectEl.innerHTML = '';
@@ -374,9 +403,16 @@
             loadCurrentSesiData();
         }
 
+        function onStatusPerkuliahanChange() {
+            todayData.statusPerkuliahan = document.getElementById('statusPerkuliahanSelect').value;
+            saveToFirestore();
+            updateUI();
+        }
+
         function clearFormPreview() {
             todayData.berangkat = null;
             todayData.masuk = null;
+            todayData.durasiPerjalanan = null;
             todayData.mediaBerangkat = null;
             todayData.mediaJalan = null;
             todayData.mediaKelas = null;
@@ -390,6 +426,7 @@
             document.getElementById('previewKelas').classList.add('hidden');
         }
 
+        // FUNGSI NADA DERING (Web Audio API)
         function playAudioFeedback(type) {
             try {
                 const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -441,6 +478,7 @@
             saveToFirestore();
         }
 
+        // AUTO-SAVE FOTO REAL-TIME SEKETIKA
         function handleFileInput(elementId, dataField, previewContainerId) {
             document.getElementById(elementId).addEventListener('change', function(e) {
                 const file = e.target.files[0];
@@ -477,7 +515,7 @@
         function renderMediaPreview(src, containerId) {
             const container = document.getElementById(containerId);
             container.classList.remove('hidden');
-            container.innerHTML = `<img src="${src}" class="max-h-32 rounded-lg object-cover cursor-pointer" onclick="openPhotoModal('${src}')"/>`;
+            container.innerHTML = `<img src="${src}" class="max-h-28 rounded-lg object-cover cursor-pointer" onclick="openPhotoModal('${src}')"/>`;
         }
 
         function openPhotoModal(src) {
@@ -523,10 +561,14 @@
                 const d = docSnap.data();
                 todayData.berangkat = d.berangkat || null;
                 todayData.masuk = d.masuk || null;
+                todayData.durasiPerjalanan = d.durasiPerjalanan || null;
+                todayData.statusPerkuliahan = d.statusPerkuliahan || "Hadir";
                 todayData.mediaBerangkat = d.mediaBerangkat || null;
                 todayData.mediaJalan = d.mediaJalan || null;
                 todayData.mediaKelas = d.mediaKelas || null;
                 
+                document.getElementById('statusPerkuliahanSelect').value = todayData.statusPerkuliahan;
+
                 if (d.mediaBerangkat) renderMediaPreview(d.mediaBerangkat, 'previewBerangkat');
                 if (d.mediaJalan) renderMediaPreview(d.mediaJalan, 'previewJalan');
                 if (d.mediaKelas) renderMediaPreview(d.mediaKelas, 'previewKelas');
@@ -534,13 +576,13 @@
             updateUI();
         }
 
+        // FUNGSI HAPUS REKAPAN DARI FIREBASE REAL-TIME
         window.deleteRekapanItem = async function(docId, matkulName) {
-            if (confirm(`Apakah kamu yakin ingin menghapus rekapan sesi "${matkulName}"?`)) {
+            if (confirm(`Apakah Anda yakin ingin menghapus rekapan sesi "${matkulName}"?`)) {
                 try {
                     const docRef = window.doc(window.db, "catatan_harian", docId);
                     await window.deleteDoc(docRef);
                     playAudioFeedback('click');
-                    alert('Rekapan berhasil dihapus!');
                 } catch (error) {
                     console.error("Gagal menghapus rekapan: ", error);
                     alert("Gagal menghapus rekapan dari server.");
@@ -569,22 +611,18 @@
                         todayData.bangun = sData.bangun;
                         localStorage.setItem(`bangun_${todayDate}`, sData.bangun);
                     }
-                    if (sData.durasiTidurText) {
-                        todayData.durasiTidurText = sData.durasiTidurText;
-                        localStorage.setItem(`durasi_tidur_${todayDate}`, sData.durasiTidurText);
-                    }
                     updateUI();
                 }
             });
 
-            // SYNC REKAPAN DAILY
+            // SYNC REKAPAN DAILY WITH ANALYTICS DURATION & STATUS KELAS
             const colRef = window.collection(window.db, "catatan_harian");
             window.onSnapshot(colRef, (snapshot) => {
                 const tbody = document.getElementById('rekapanTableBody');
                 tbody.innerHTML = '';
 
                 if (snapshot.empty) {
-                    tbody.innerHTML = '<tr><td colspan="9" class="text-center p-3 text-slate-500">Belum ada rekapan harian.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="8" class="text-center p-4 text-slate-500">Belum ada rekapan harian.</td></tr>';
                     return;
                 }
 
@@ -599,12 +637,35 @@
                     const row = document.createElement('tr');
                     row.className = "hover:bg-slate-700/30 transition border-b border-slate-800";
 
+                    // Hitung Durasi Tidur Per Sesi
+                    const tMins = parseToMinutes(item.tidur);
+                    const bMins = parseToMinutes(item.bangun);
+                    let durasiTidurStr = "-";
+                    if (tMins !== null && bMins !== null) {
+                        let d = bMins - tMins;
+                        if (d < 0) d += 24 * 60;
+                        durasiTidurStr = `${Math.floor(d / 60)}j ${d % 60}m`;
+                    }
+
+                    // Hitung Durasi Perjalanan
+                    const pergMins = parseToMinutes(item.berangkat);
+                    const masMins = parseToMinutes(item.masuk);
+                    let durasiPergStr = "-";
+                    if (pergMins !== null && masMins !== null) {
+                        let d = masMins - pergMins;
+                        if (d < 0) d += 24 * 60;
+                        durasiPergStr = `${d} menit`;
+                    }
+
                     const masukMins = parseToMinutes(item.masuk);
                     const targetMins = parseToMinutes(item.target || "07:00");
                     let statusBadge = `<span class="text-slate-500">-</span>`;
                     let skorBadge = `<span class="text-slate-500">-</span>`;
 
-                    if (masukMins !== null && targetMins !== null) {
+                    if (item.statusPerkuliahan === "Kelas Kosong") {
+                        statusBadge = `<span class="px-2 py-0.5 rounded bg-slate-700 text-slate-300 font-semibold text-[10px]">🚫 Kelas Kosong</span>`;
+                        skorBadge = `<span class="px-2 py-0.5 rounded bg-slate-800 text-slate-400 font-bold text-xs">N/A</span>`;
+                    } else if (masukMins !== null && targetMins !== null) {
                         const diff = masukMins - targetMins;
                         if (diff <= 0) {
                             statusBadge = `<span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold text-[10px]">Tepat Waktu</span>`;
@@ -621,34 +682,36 @@
                         }
                     }
 
-                    const makeThumb = (src, title) => src ? `<img src="${src}" class="w-7 h-7 rounded-lg object-cover border border-slate-600 cursor-pointer inline-block hover:opacity-80 transition" onclick="openPhotoModal('${src}')" title="${title}"/>` : '';
-
-                    const visualThumbs = `
-                        <div class="flex items-center justify-center gap-1">
-                            ${makeThumb(item.mediaBerangkat, 'Foto Berangkat')}
-                            ${makeThumb(item.mediaJalan, 'Kendala Jalan')}
-                            ${makeThumb(item.mediaKelas, 'Foto Tiba Kelas')}
-                            ${(!item.mediaBerangkat && !item.mediaJalan && !item.mediaKelas) ? '<span class="text-slate-600 text-[10px]">-</span>' : ''}
-                        </div>
-                    `;
+                    const makeThumb = (src, title) => src ? `<img src="${src}" class="w-7 h-7 rounded-lg object-cover border border-slate-600 cursor-pointer inline-block hover:opacity-80 transition" onclick="openPhotoModal('${src}')" title="${title}"/>` : `<span class="text-slate-600 text-[10px]">-</span>`;
 
                     const tglOnly = item.id.split('_')[0];
                     const matkulLabel = item.matkul || 'Matkul';
-                    const jamTidur = item.tidur ? `${item.tidur}` : '-';
-                    const jamBangun = item.bangun ? `${item.bangun}` : '-';
-                    const durasiTidur = item.durasiTidurText || '-';
+                    const subTagStatus = item.statusPerkuliahan === "Kelas Pengganti" ? '<span class="block text-[9px] text-amber-400 font-semibold">🔄 Kelas Pengganti</span>' : '';
 
                     row.innerHTML = `
                         <td class="p-2 font-mono text-[11px]">${tglOnly}</td>
-                        <td class="p-2 font-medium text-white">${matkulLabel}</td>
-                        <td class="p-2 text-center font-mono text-indigo-300">${jamTidur}</td>
-                        <td class="p-2 text-center font-mono text-amber-300">${jamBangun}</td>
-                        <td class="p-2 text-center text-slate-300 font-semibold">${durasiTidur}</td>
-                        <td class="p-2 text-center">${visualThumbs}</td>
+                        <td class="p-2">
+                            <span class="font-medium text-white block">${matkulLabel}</span>
+                            ${subTagStatus}
+                        </td>
+                        <td class="p-2 text-center text-[11px]">
+                            <span class="text-indigo-300 block font-mono">${item.tidur || '-'} / ${item.bangun || '-'}</span>
+                            <span class="text-slate-400 text-[10px]">(${durasiTidurStr})</span>
+                        </td>
+                        <td class="p-2 text-center text-xs font-mono font-semibold text-blue-300">
+                            ${durasiPergStr}
+                        </td>
+                        <td class="p-2 text-center">
+                            <div class="flex items-center justify-center gap-1">
+                                ${makeThumb(item.mediaBerangkat, 'Berangkat')}
+                                ${makeThumb(item.mediaJalan, 'Kendala')}
+                                ${makeThumb(item.mediaKelas, 'Tiba Kelas')}
+                            </div>
+                        </td>
                         <td class="p-2">${statusBadge}</td>
                         <td class="p-2 text-center">${skorBadge}</td>
                         <td class="p-2 text-center">
-                            <button onclick="deleteRekapanItem('${item.id}', '${matkulLabel}')" class="p-1.5 rounded-lg bg-rose-500/20 text-rose-400 hover:bg-rose-600 hover:text-white transition" title="Hapus Rekapan Sesi Ini">
+                            <button onclick="deleteRekapanItem('${item.id}', '${matkulLabel}')" class="p-1.5 rounded-lg bg-rose-500/20 text-rose-400 hover:bg-rose-600 hover:text-white transition" title="Hapus Sesi Ini">
                                 <i class="fa-solid fa-trash text-xs"></i>
                             </button>
                         </td>
@@ -662,16 +725,21 @@
             if (!window.db) return;
             activeSesiKey = generateSesiKey();
             
+            // Hitung Durasi Perjalanan Realtime
+            const bMins = parseToMinutes(todayData.berangkat);
+            const mMins = parseToMinutes(todayData.masuk);
+            if (bMins !== null && mMins !== null) {
+                let d = mMins - bMins;
+                if (d < 0) d += 24 * 60;
+                todayData.durasiPerjalanan = d;
+            }
+
             const docRef = window.doc(window.db, "catatan_harian", activeSesiKey);
             await window.setDoc(docRef, todayData, { merge: true });
 
             if (todayData.tidur || todayData.bangun) {
                 const sleepRef = window.doc(window.db, "tidur_harian", todayDate);
-                await window.setDoc(sleepRef, { 
-                    tidur: todayData.tidur, 
-                    bangun: todayData.bangun,
-                    durasiTidurText: todayData.durasiTidurText
-                }, { merge: true });
+                await window.setDoc(sleepRef, { tidur: todayData.tidur, bangun: todayData.bangun }, { merge: true });
             }
         }
 
@@ -718,6 +786,16 @@
             const evalBadge = document.getElementById('evalBadge');
             const skorDisplay = document.getElementById('skorValueDisplay');
             const predikatBadge = document.getElementById('predikatBadgeDisplay');
+
+            if (todayData.statusPerkuliahan === "Kelas Kosong") {
+                evalBadge.className = "p-3 rounded-xl bg-slate-800 border border-slate-700 text-center font-bold text-slate-300 text-sm";
+                evalBadge.innerText = "🚫 Sesi Ini Ditandai Sebagai Kelas Kosong / Dibatalkan";
+                skorDisplay.innerText = "N/A";
+                skorDisplay.className = "text-3xl font-black text-slate-400 mt-1";
+                predikatBadge.innerText = "Kelas Kosong";
+                predikatBadge.className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-slate-400 border border-slate-700";
+                return;
+            }
 
             const masukMins = parseToMinutes(todayData.masuk);
             const targetMins = parseToMinutes(todayData.target || "07:00");
@@ -779,10 +857,7 @@
             if (tidurMins !== null && bangunMins !== null) {
                 let dur = bangunMins - tidurMins;
                 if (dur < 0) dur += 24 * 60;
-                const durStr = `${Math.floor(dur / 60)}j ${dur % 60}m`;
                 document.getElementById('durasiTidur').innerText = `${Math.floor(dur / 60)} jam ${dur % 60} menit`;
-                todayData.durasiTidurText = durStr;
-                localStorage.setItem(`durasi_tidur_${todayDate}`, durStr);
             } else {
                 document.getElementById('durasiTidur').innerText = "-";
             }
