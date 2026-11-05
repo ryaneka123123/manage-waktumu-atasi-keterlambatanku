@@ -45,7 +45,7 @@
                 </div>
                 <div>
                     <h1 class="font-bold text-lg leading-tight text-white">Manage Waktumu</h1>
-                    <p class="text-xs text-indigo-400 font-medium">Atasi Keterlambatanku (Sistem Penilaian Kedisiplinan)</p>
+                    <p class="text-xs text-indigo-400 font-medium">Jadwal Kuliah Semester 3 (Auto-Schedule)</p>
                 </div>
             </div>
             <span id="syncStatus" class="px-2.5 py-1 text-xs rounded-full bg-emerald-500/20 text-emerald-400 font-medium flex items-center gap-1.5">
@@ -79,7 +79,7 @@
             </div>
         </section>
 
-        <!-- Live Clock & Target Card -->
+        <!-- Live Clock & Schedule Selector -->
         <section class="bg-gradient-to-br from-slate-800 to-indigo-950 p-6 rounded-2xl border border-indigo-500/30 shadow-xl text-center space-y-4">
             <span class="text-xs uppercase tracking-wider font-semibold text-indigo-400 bg-indigo-950/80 px-3 py-1 rounded-full border border-indigo-800">
                 Waktu Sistem Terkunci Real-Time
@@ -89,21 +89,25 @@
                 <div id="liveDate" class="text-sm text-slate-400 mt-1 font-medium">Loading tanggal...</div>
             </div>
 
-            <!-- Input Mata Kuliah -->
+            <!-- Selector Jadwal Kuliah Otomatis -->
             <div class="pt-3 border-t border-slate-700/60 space-y-3 bg-slate-900/50 p-3 rounded-xl border border-slate-800 text-left">
                 <div>
-                    <label class="text-xs text-indigo-300 font-semibold block mb-1">Mata Kuliah / Kelas Hari Ini:</label>
-                    <input type="text" id="matkulInput" placeholder="Contoh: Algoritma & Pemrograman" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 font-medium">
+                    <label class="text-xs text-indigo-300 font-semibold block mb-1">
+                        <i class="fa-solid fa-calendar-days mr-1"></i> Pilih Mata Kuliah Hari Ini:
+                    </label>
+                    <select id="matkulSelect" onchange="onMatkulSelectChange()" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 font-medium">
+                        <!-- Pilihan otomatis akan dirender melalui JavaScript -->
+                    </select>
                 </div>
                 
-                <div class="flex items-center justify-between gap-3">
+                <div class="flex items-center justify-between gap-3 bg-slate-800/80 p-2.5 rounded-lg border border-slate-700/80">
                     <div>
-                        <p class="text-xs text-slate-400 font-medium">Target Masuk Kelas</p>
-                        <p id="targetDisplay" class="text-sm font-bold text-indigo-300">07:00 WIB</p>
+                        <p class="text-[11px] text-slate-400 font-medium">Ruang & Jam Kelas:</p>
+                        <p id="ruangDisplay" class="text-xs font-bold text-amber-300">-</p>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <input type="time" id="targetInput" value="07:00" class="bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 text-sm text-white focus:outline-none focus:border-indigo-500">
-                        <button onclick="saveTarget()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition">Simpan Sesi</button>
+                    <div class="text-right">
+                        <p class="text-[11px] text-slate-400 font-medium">Target Masuk Kelas:</p>
+                        <p id="targetDisplay" class="text-sm font-black text-emerald-400">07:00 WIB</p>
                     </div>
                 </div>
             </div>
@@ -159,11 +163,9 @@
                 <i class="fa-solid fa-bolt text-amber-400"></i> Tombol Catat Waktu Real-Time
             </h2>
 
-            <div class="bg-indigo-950/40 p-3 rounded-xl border border-indigo-800/50 text-xs text-indigo-300 flex justify-between items-center">
-                <span><i class="fa-solid fa-info-circle mr-1"></i> Jam Tidur/Bangun mengikuti catatan pertama hari ini.</span>
-                <button onclick="resetSesiBaru()" class="bg-indigo-800 hover:bg-indigo-700 text-white px-2.5 py-1 rounded text-[11px] font-medium">
-                    + Sesi Matkul Baru
-                </button>
+            <div class="bg-indigo-950/40 p-3 rounded-xl border border-indigo-800/50 text-xs text-indigo-300 flex items-center gap-2">
+                <i class="fa-solid fa-circle-info text-indigo-400"></i>
+                <span>Jam Tidur/Bangun otomatis tersimpan untuk seluruh sesi matkul hari ini.</span>
             </div>
 
             <!-- Catat Tidur -->
@@ -263,10 +265,10 @@
             </div>
         </section>
 
-        <!-- Rekapan Daily Dengan Nilai Skor -->
+        <!-- Rekapan Daily Dengan 3 Bukti Visual Terpisah -->
         <section class="bg-slate-800/80 p-5 rounded-2xl border border-slate-700 space-y-4">
             <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-                <i class="fa-solid fa-list-check text-emerald-400"></i> Rekapan Harian &amp; Penilaian Kedisiplinan
+                <i class="fa-solid fa-list-check text-emerald-400"></i> Rekapan Harian &amp; Bukti Foto Real-Time
             </h2>
             <div class="overflow-x-auto">
                 <table class="w-full text-xs text-left text-slate-300">
@@ -274,14 +276,16 @@
                         <tr>
                             <th class="p-2">Tgl</th>
                             <th class="p-2">Matkul</th>
-                            <th class="p-2">Bukti Visual</th>
+                            <th class="p-2 text-center">Foto Berangkat</th>
+                            <th class="p-2 text-center">Kendala Jalan</th>
+                            <th class="p-2 text-center">Foto Kelas</th>
                             <th class="p-2">Status</th>
                             <th class="p-2 text-center">Skor Nilai</th>
                         </tr>
                     </thead>
                     <tbody id="rekapanTableBody" class="divide-y divide-slate-700/50">
                         <tr>
-                            <td colspan="5" class="text-center p-3 text-slate-500">Memuat riwayat harian...</td>
+                            <td colspan="7" class="text-center p-3 text-slate-500">Memuat riwayat harian...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -299,17 +303,104 @@
     </div>
 
     <script>
+        // MASTER JADWAL KULIAH RYAN EKA SAPUTRA (SEMESTER 3)
+        const SCHEDULE_DATABASE = [
+            { dayIndex: 1, name: "Matematika Ekonomi & Bisnis", time: "07.00 - 10.25", room: "D8.206", target: "07:00" },
+            { dayIndex: 1, name: "Ekonomi Mikro 2", time: "13.10 - 15.45", room: "D8.102", target: "13:10" },
+            { dayIndex: 3, name: "BPP", time: "07.00 - 09.35", room: "A20.505", target: "07:00" },
+            { dayIndex: 3, name: "B.Indonesia", time: "10.30 - 12.10", room: "A19.607", target: "10:30" },
+            { dayIndex: 3, name: "Manajemen Inovasi", time: "13.10 - 15.45", room: "A20.402", target: "13:10" },
+            { dayIndex: 4, name: "Ekonomi Makro 2", time: "07.00 - 09.35", room: "D11.107", target: "07:00" },
+            { dayIndex: 5, name: "Strategi Pembelajaran Ekonomi", time: "07.00 - 10.25", room: "D8.304", target: "07:00" }
+        ];
+
         let todayDate = new Date().toISOString().split('T')[0];
-        let dailySleepData = { tidur: null, bangun: null };
+        let currentDayIndex = new Date().getDay(); // 0=Minggu, 1=Senin, 3=Rabu, 4=Kamis, 5=Jumat
         let activeSesiKey = null;
+
         let todayData = { 
             subjek: "Ryan Eka Saputra",
             obsRumah: "Orang tua",
             obsKampus: "Ficky Ferdinand Abalain",
-            matkul: "", tidur: null, bangun: null, berangkat: null, masuk: null, target: "07:00", 
-            skorKedisiplinan: null, predikat: null,
-            mediaBerangkat: null, mediaJalan: null, mediaKelas: null 
+            matkul: "", 
+            target: "07:00",
+            ruang: "",
+            tidur: localStorage.getItem(`tidur_${todayDate}`) || null, 
+            bangun: localStorage.getItem(`bangun_${todayDate}`) || null, 
+            berangkat: null, 
+            masuk: null, 
+            skorKedisiplinan: null, 
+            predikat: null,
+            mediaBerangkat: null, 
+            mediaJalan: null, 
+            mediaKelas: null 
         };
+
+        // RENDER JADWAL KULIAH KE DROPDOWN
+        function populateScheduleOptions() {
+            const selectEl = document.getElementById('matkulSelect');
+            selectEl.innerHTML = '';
+
+            let todayCourses = SCHEDULE_DATABASE.filter(c => c.dayIndex === currentDayIndex);
+            let otherCourses = SCHEDULE_DATABASE.filter(c => c.dayIndex !== currentDayIndex);
+
+            if (todayCourses.length > 0) {
+                let todayGroup = document.createElement('optgroup');
+                todayGroup.label = "--- JADWAL HARI INI ---";
+                todayCourses.forEach(c => {
+                    let opt = document.createElement('option');
+                    opt.value = JSON.stringify(c);
+                    opt.innerText = `📌 ${c.name} (${c.time} | ${c.room})`;
+                    todayGroup.appendChild(opt);
+                });
+                selectEl.appendChild(todayGroup);
+            }
+
+            let allGroup = document.createElement('optgroup');
+            allGroup.label = "--- JADWAL MATKUL LAINNYA ---";
+            otherCourses.forEach(c => {
+                let opt = document.createElement('option');
+                opt.value = JSON.stringify(c);
+                opt.innerText = `${c.name} (${c.time} | ${c.room})`;
+                allGroup.appendChild(opt);
+            });
+            selectEl.appendChild(allGroup);
+
+            // Set default pilihan pertama
+            onMatkulSelectChange();
+        }
+
+        function onMatkulSelectChange() {
+            const selectEl = document.getElementById('matkulSelect');
+            if (!selectEl.value) return;
+
+            const selectedCourse = JSON.parse(selectEl.value);
+            todayData.matkul = selectedCourse.name;
+            todayData.target = selectedCourse.target;
+            todayData.ruang = `${selectedCourse.room} (${selectedCourse.time})`;
+
+            document.getElementById('ruangDisplay').innerText = todayData.ruang;
+            document.getElementById('targetDisplay').innerText = `${todayData.target} WIB`;
+
+            clearFormPreview();
+            loadCurrentSesiData();
+        }
+
+        function clearFormPreview() {
+            todayData.berangkat = null;
+            todayData.masuk = null;
+            todayData.mediaBerangkat = null;
+            todayData.mediaJalan = null;
+            todayData.mediaKelas = null;
+
+            document.getElementById('mediaBerangkatInput').value = '';
+            document.getElementById('mediaJalanInput').value = '';
+            document.getElementById('mediaKelasInput').value = '';
+
+            document.getElementById('previewBerangkat').classList.add('hidden');
+            document.getElementById('previewJalan').classList.add('hidden');
+            document.getElementById('previewKelas').classList.add('hidden');
+        }
 
         // FUNGSI NADA DERING (Web Audio API)
         function playAudioFeedback(type) {
@@ -363,7 +454,7 @@
             saveToFirestore();
         }
 
-        // KOMPRESI & UPLOAD FOTO MULTI-INPUT
+        // AUTO-SAVE FOTO REAKSI CEPAT SAAT DIUNGGAH
         function handleFileInput(elementId, dataField, previewContainerId) {
             document.getElementById(elementId).addEventListener('change', function(e) {
                 const file = e.target.files[0];
@@ -384,6 +475,8 @@
                         
                         todayData[dataField] = canvas.toDataURL('image/jpeg', 0.6);
                         renderMediaPreview(todayData[dataField], previewContainerId);
+                        
+                        saveToFirestore();
                     };
                     img.src = evt.target.result;
                 };
@@ -430,9 +523,29 @@
         }
 
         function generateSesiKey() {
-            const matkulVal = document.getElementById('matkulInput').value.trim() || 'Matkul_1';
-            const cleanMatkul = matkulVal.replace(/[^a-zA-Z0-9]/g, '_');
+            const cleanMatkul = (todayData.matkul || 'Matkul').replace(/[^a-zA-Z0-9]/g, '_');
             return `${todayDate}_${cleanMatkul}`;
+        }
+
+        async function loadCurrentSesiData() {
+            if (!window.db) return;
+            activeSesiKey = generateSesiKey();
+            const docRef = window.doc(window.db, "catatan_harian", activeSesiKey);
+            const docSnap = await window.getDoc(docRef);
+
+            if (docSnap.exists()) {
+                const d = docSnap.data();
+                todayData.berangkat = d.berangkat || null;
+                todayData.masuk = d.masuk || null;
+                todayData.mediaBerangkat = d.mediaBerangkat || null;
+                todayData.mediaJalan = d.mediaJalan || null;
+                todayData.mediaKelas = d.mediaKelas || null;
+                
+                if (d.mediaBerangkat) renderMediaPreview(d.mediaBerangkat, 'previewBerangkat');
+                if (d.mediaJalan) renderMediaPreview(d.mediaJalan, 'previewJalan');
+                if (d.mediaKelas) renderMediaPreview(d.mediaKelas, 'previewKelas');
+            }
+            updateUI();
         }
 
         function initFirebaseSync() {
@@ -441,26 +554,33 @@
                 return;
             }
 
-            activeSesiKey = generateSesiKey();
+            populateScheduleOptions();
 
+            // Sync Jam Tidur Harian
             const dailySleepRef = window.doc(window.db, "tidur_harian", todayDate);
             window.onSnapshot(dailySleepRef, (docSnap) => {
                 if (docSnap.exists()) {
-                    dailySleepData = docSnap.data();
-                    if (dailySleepData.tidur) todayData.tidur = dailySleepData.tidur;
-                    if (dailySleepData.bangun) todayData.bangun = dailySleepData.bangun;
+                    const sData = docSnap.data();
+                    if (sData.tidur) {
+                        todayData.tidur = sData.tidur;
+                        localStorage.setItem(`tidur_${todayDate}`, sData.tidur);
+                    }
+                    if (sData.bangun) {
+                        todayData.bangun = sData.bangun;
+                        localStorage.setItem(`bangun_${todayDate}`, sData.bangun);
+                    }
                     updateUI();
                 }
             });
 
-            // SYNC REKAPAN DAILY DENGAN PENILAIAN SKOR
+            // SYNC REKAPAN DAILY
             const colRef = window.collection(window.db, "catatan_harian");
             window.onSnapshot(colRef, (snapshot) => {
                 const tbody = document.getElementById('rekapanTableBody');
                 tbody.innerHTML = '';
 
                 if (snapshot.empty) {
-                    tbody.innerHTML = '<tr><td colspan="5" class="text-center p-3 text-slate-500">Belum ada rekapan harian.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center p-3 text-slate-500">Belum ada rekapan harian.</td></tr>';
                     return;
                 }
 
@@ -497,22 +617,16 @@
                         }
                     }
 
-                    const makeThumb = (src, title) => src ? `<img src="${src}" class="w-7 h-7 rounded-lg object-cover border border-slate-600 cursor-pointer inline-block" onclick="openPhotoModal('${src}')" title="${title}"/>` : '';
+                    const makeThumb = (src, title) => src ? `<img src="${src}" class="w-8 h-8 rounded-lg object-cover border border-slate-600 cursor-pointer inline-block hover:opacity-80 transition" onclick="openPhotoModal('${src}')" title="${title}"/>` : `<span class="text-slate-600 text-[10px]">-</span>`;
 
                     const tglOnly = item.id.split('_')[0];
-                    const visualThumbs = `
-                        <div class="flex items-center gap-1">
-                            ${makeThumb(item.mediaBerangkat, 'Foto Berangkat')}
-                            ${makeThumb(item.mediaJalan, 'Kendala Jalan')}
-                            ${makeThumb(item.mediaKelas, 'Foto Tiba Kelas')}
-                            ${(!item.mediaBerangkat && !item.mediaJalan && !item.mediaKelas) ? '<span class="text-slate-600 text-[10px]">-</span>' : ''}
-                        </div>
-                    `;
 
                     row.innerHTML = `
                         <td class="p-2 font-mono text-[11px]">${tglOnly}</td>
                         <td class="p-2 font-medium text-white">${item.matkul || 'Matkul'}</td>
-                        <td class="p-2">${visualThumbs}</td>
+                        <td class="p-2 text-center">${makeThumb(item.mediaBerangkat, 'Foto Berangkat')}</td>
+                        <td class="p-2 text-center">${makeThumb(item.mediaJalan, 'Kendala Jalan')}</td>
+                        <td class="p-2 text-center">${makeThumb(item.mediaKelas, 'Foto Tiba Kelas')}</td>
                         <td class="p-2">${statusBadge}</td>
                         <td class="p-2 text-center">${skorBadge}</td>
                     `;
@@ -524,6 +638,7 @@
         async function saveToFirestore() {
             if (!window.db) return;
             activeSesiKey = generateSesiKey();
+            
             const docRef = window.doc(window.db, "catatan_harian", activeSesiKey);
             await window.setDoc(docRef, todayData, { merge: true });
 
@@ -538,7 +653,9 @@
             const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).replace(/\./g, ':');
             
             todayData[type] = timeStr;
-            todayData.matkul = document.getElementById('matkulInput').value.trim() || 'Matkul Sesi Ini';
+
+            if (type === 'tidur') localStorage.setItem(`tidur_${todayDate}`, timeStr);
+            if (type === 'bangun') localStorage.setItem(`bangun_${todayDate}`, timeStr);
             
             if (type === 'masuk') {
                 const masukMins = parseToMinutes(todayData.masuk);
@@ -560,33 +677,11 @@
             updateUI();
         }
 
-        function saveTarget() {
-            todayData.target = document.getElementById('targetInput').value;
-            todayData.matkul = document.getElementById('matkulInput').value.trim() || 'Matkul Sesi Ini';
-            playAudioFeedback('click');
-            saveToFirestore();
-            updateUI();
-        }
-
         function resetSesiBaru() {
-            document.getElementById('matkulInput').value = '';
-            document.getElementById('mediaBerangkatInput').value = '';
-            document.getElementById('mediaJalanInput').value = '';
-            document.getElementById('mediaKelasInput').value = '';
-            document.getElementById('previewBerangkat').classList.add('hidden');
-            document.getElementById('previewJalan').classList.add('hidden');
-            document.getElementById('previewKelas').classList.add('hidden');
-            todayData.berangkat = null;
-            todayData.masuk = null;
-            todayData.matkul = '';
-            todayData.skorKedisiplinan = null;
-            todayData.predikat = null;
-            todayData.mediaBerangkat = null;
-            todayData.mediaJalan = null;
-            todayData.mediaKelas = null;
+            clearFormPreview();
             playAudioFeedback('click');
             updateUI();
-            alert('Siap mengisi Sesi Matkul Baru!');
+            alert('Form telah dibersihkan! Silakan pilih mata kuliah lain dari daftar.');
         }
 
         function updateUI() {
@@ -685,4 +780,3 @@
     </script>
 </body>
 </html>
-  
